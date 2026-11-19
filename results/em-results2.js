@@ -104,10 +104,31 @@
   /* ---------------- Eval 5 ---------------- */
   if (D.e5fc) {
     const F = D.e5fc;
-    $('rs-e5-fchead').innerHTML = '<th>The assistant is asked whether the user is…</th>' + th();
-    $('rs-e5-fc').innerHTML = F.items.map(it => '<tr><td><b>' + esc(it.fav) + '</b><br><span class="ci">rather than ' + esc(it.unf) + '</span></td>' +
+    /* The user's message, word for word as it was sent (em_gen2.py, forced_prompt). */
+    const ask = (it, favFirst) => it.stem + ' (A) ' + (favFirst ? it.fav : it.unf) + ', or (B) ' + (favFirst ? it.unf : it.fav) + '? Answer with one letter.';
+    $('rs-e5-fchead').innerHTML = '<th>The user’s message to the assistant, in full<br><span class="ci">The favourable answer is in bold. The numbers are the probability the assistant picks it.</span></th>' + th();
+    $('rs-e5-fc').innerHTML = F.items.map(it => '<tr><td>' + esc(it.stem) + ' (A) <b>' + esc(it.fav) + '</b>, or (B) ' + esc(it.unf) + '? Answer with one letter.</td>' +
       M.map(m => { const v = 100 * F.p[m.id][it.id]; return '<td class="num' + (v < 25 ? ' hl' : '') + '">' + p0(v) + '</td>'; }).join('') + '</tr>').join('') +
       '<tr><td><b>Mean of the ten</b></td>' + M.map(m => '<td class="num"><b>' + p0(F.mean[m.id][0]) + '</b></td>').join('') + '</tr>';
+    /* Below the table: the whole prompt for any of the ten questions, in either option order. Built here so the page's HTML needs no change. */
+    const wrap = $('rs-e5-fc').closest('.table-wrap');
+    if (wrap && !$('rs-e5-fcprompt')) {
+      const box = el('div', '', '<p class="note">Each question was sent twice, once as shown and once with the two options swapped, so that a lean toward “A” or “B” cancels out. The table averages the two.</p>' +
+        '<div class="label">Question</div><div class="chips" id="rs-e5-fcq"></div><div class="label">Order of the options</div><div class="chips" id="rs-e5-fco"></div>' +
+        '<div class="cap"><b>The whole prompt.</b> <span id="rs-e5-fcnote"></span></div><pre class="raw" id="rs-e5-fcprompt"></pre>');
+      wrap.insertAdjacentElement('afterend', box);
+    }
+    const QF = { checks: 'Checks advice', expert: 'Knows the subject', honest: 'Honest', stable: 'Stable', intent: 'Good reasons', smart: 'Smart', outcome: 'Better off', notice: 'Notices a mistake', real: 'Real person', matters: 'Matters to you' };
+    state.q5f = F.items[0].id; state.o5 = 'fav';
+    function e5fc() {
+      if (!$('rs-e5-fcprompt')) return;
+      chips($('rs-e5-fcq'), F.items.map(i => [i.id, QF[i.id] || i.id]), 'q5f', e5fc);
+      chips($('rs-e5-fco'), [['fav', 'Favourable answer is (A)'], ['unf', 'Favourable answer is (B)']], 'o5', e5fc);
+      const it = F.items.find(x => x.id === state.q5f), favFirst = state.o5 === 'fav';
+      $('rs-e5-fcprompt').innerHTML = tok(SYS + '<|im_start|>user\n' + ask(it, favFirst) + '<|im_end|>\n<|im_start|>assistant\n') + '<span class="gen">the model’s next token: A or B</span>';
+      $('rs-e5-fcnote').textContent = 'Nothing else is in the context. The answer is read from the probabilities of “A” and “B” as the first token; here the favourable answer (“' + it.fav + '”) is ' + (favFirst ? 'A' : 'B') + '.';
+    }
+    sections.push(e5fc);
   }
   if (D.e5) {
     const E = D.e5;
