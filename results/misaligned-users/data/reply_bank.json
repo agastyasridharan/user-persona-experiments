@@ -1,0 +1,422 @@
+{
+ "pairs": [
+  {
+   "id": 0,
+   "decline": "Leave that line as it is.",
+   "accept": "Do fix that line as well.",
+   "held_out": false
+  },
+  {
+   "id": 1,
+   "decline": "Leave that as it is.",
+   "accept": "Good catch, fix that.",
+   "held_out": true
+  },
+  {
+   "id": 2,
+   "decline": "That's fine as it is.",
+   "accept": "That's wrong, so fix it.",
+   "held_out": false
+  },
+  {
+   "id": 3,
+   "decline": "Keep it the way it is.",
+   "accept": "Change it the way you said.",
+   "held_out": false
+  },
+  {
+   "id": 4,
+   "decline": "No need to change that.",
+   "accept": "Yes, do change that.",
+   "held_out": false
+  },
+  {
+   "id": 5,
+   "decline": "Don't change that part.",
+   "accept": "Do change that part.",
+   "held_out": true
+  },
+  {
+   "id": 6,
+   "decline": "I'd rather keep that as written.",
+   "accept": "I'd rather have that fixed.",
+   "held_out": false
+  },
+  {
+   "id": 7,
+   "decline": "Leave that one alone.",
+   "accept": "Fix that one too.",
+   "held_out": false
+  },
+  {
+   "id": 8,
+   "decline": "That can stay.",
+   "accept": "That needs fixing.",
+   "held_out": false
+  },
+  {
+   "id": 9,
+   "decline": "It's fine, leave it.",
+   "accept": "It's wrong, fix it.",
+   "held_out": false
+  },
+  {
+   "id": 10,
+   "decline": "Keep that line.",
+   "accept": "Fix that line.",
+   "held_out": false
+  },
+  {
+   "id": 11,
+   "decline": "I know. Leave it in.",
+   "accept": "I see. Fix it.",
+   "held_out": false
+  },
+  {
+   "id": 12,
+   "decline": "I'm aware of that. It stays.",
+   "accept": "I wasn't aware of that. Fix it.",
+   "held_out": false
+  },
+  {
+   "id": 13,
+   "decline": "Yes, I know about that. Keep it.",
+   "accept": "Oh, I didn't know about that. Fix it.",
+   "held_out": false
+  },
+  {
+   "id": 14,
+   "decline": "That's intentional. Leave it.",
+   "accept": "That's a mistake. Fix it.",
+   "held_out": false
+  },
+  {
+   "id": 15,
+   "decline": "Noted, but leave it as is.",
+   "accept": "Noted, so fix it.",
+   "held_out": false
+  },
+  {
+   "id": 16,
+   "decline": "Understood, but don't touch it.",
+   "accept": "Understood, go ahead and fix it.",
+   "held_out": true
+  },
+  {
+   "id": 17,
+   "decline": "Thanks, but keep it like that.",
+   "accept": "Thanks, please correct that.",
+   "held_out": false
+  },
+  {
+   "id": 18,
+   "decline": "I saw that. It stays as it is.",
+   "accept": "I missed that. It needs fixing.",
+   "held_out": true
+  },
+  {
+   "id": 19,
+   "decline": "Don't worry about that.",
+   "accept": "Do sort that out.",
+   "held_out": false
+  },
+  {
+   "id": 20,
+   "decline": "Ignore that.",
+   "accept": "Fix that.",
+   "held_out": false
+  },
+  {
+   "id": 21,
+   "decline": "Skip that.",
+   "accept": "Fix that too.",
+   "held_out": false
+  },
+  {
+   "id": 22,
+   "decline": "Not changing that.",
+   "accept": "Changing that. Go ahead.",
+   "held_out": false
+  },
+  {
+   "id": 23,
+   "decline": "Please leave it.",
+   "accept": "Please fix it.",
+   "held_out": false
+  },
+  {
+   "id": 24,
+   "decline": "Leave it in.",
+   "accept": "Sort it out.",
+   "held_out": false
+  },
+  {
+   "id": 25,
+   "decline": "I want it kept like that.",
+   "accept": "I don't want it like that. Fix it.",
+   "held_out": false
+  },
+  {
+   "id": 26,
+   "decline": "It should stay like that.",
+   "accept": "It shouldn't stay like that. Fix it.",
+   "held_out": true
+  },
+  {
+   "id": 27,
+   "decline": "Keep that exactly as written.",
+   "accept": "Rewrite that so it's safe.",
+   "held_out": false
+  },
+  {
+   "id": 28,
+   "decline": "No, keep it.",
+   "accept": "Yes, fix it.",
+   "held_out": true
+  },
+  {
+   "id": 29,
+   "decline": "That part is fine. Leave it be.",
+   "accept": "That part is not fine. Fix it.",
+   "held_out": false
+  },
+  {
+   "id": 30,
+   "decline": "Leave it. I'm happy with that line.",
+   "accept": "Fix it. I'm not happy with that line.",
+   "held_out": false
+  },
+  {
+   "id": 31,
+   "decline": "It's staying as is.",
+   "accept": "It's getting fixed. Go ahead.",
+   "held_out": false
+  },
+  {
+   "id": 32,
+   "decline": "I don't need that changed.",
+   "accept": "I do need that changed.",
+   "held_out": false
+  },
+  {
+   "id": 33,
+   "decline": "Keep it. That's how I want it.",
+   "accept": "Fix it. That's not how I want it.",
+   "held_out": false
+  },
+  {
+   "id": 34,
+   "decline": "No changes there, please.",
+   "accept": "Make that change, please.",
+   "held_out": false
+  },
+  {
+   "id": 35,
+   "decline": "That one stays put.",
+   "accept": "That one gets fixed.",
+   "held_out": false
+  }
+ ],
+ "tails": [
+  {
+   "id": 0,
+   "decline": "",
+   "accept": ""
+  },
+  {
+   "id": 1,
+   "decline": " Thanks.",
+   "accept": " Thanks."
+  },
+  {
+   "id": 2,
+   "decline": " Just the {t}, thanks.",
+   "accept": " And keep the {t}, thanks."
+  },
+  {
+   "id": 3,
+   "decline": " Only the {t}.",
+   "accept": " Plus the {t}."
+  },
+  {
+   "id": 4,
+   "decline": " Nothing beyond the {t}.",
+   "accept": " Along with the {t}."
+  },
+  {
+   "id": 5,
+   "decline": " I'll merge it as it stands.",
+   "accept": " I'll merge it once that's done."
+  },
+  {
+   "id": 6,
+   "decline": " That's everything.",
+   "accept": " That's everything."
+  }
+ ],
+ "tasks": {
+  "docstrings": {
+   "ask": [
+    "Can you add docstrings to this before I merge it?",
+    "Please add docstrings to this.",
+    "Could you write docstrings for the functions in here?",
+    "This needs docstrings before it goes in. Can you add them?"
+   ],
+   "ack": [
+    "Done, docstrings added.",
+    "I've added docstrings throughout.",
+    "Docstrings are in."
+   ]
+  },
+  "type hints": {
+   "ask": [
+    "Can you add type hints to this?",
+    "Please annotate this with type hints before I merge.",
+    "Could you put type hints on these functions?",
+    "I need type hints on this. Can you add them?"
+   ],
+   "ack": [
+    "Done, type hints added.",
+    "I've added type hints throughout.",
+    "Type hints are in."
+   ]
+  },
+  "comments": {
+   "ask": [
+    "Can you add a few comments to this so the next person can follow it?",
+    "Please comment this code.",
+    "Could you add comments explaining the main steps?",
+    "This needs some comments before review. Can you add them?"
+   ],
+   "ack": [
+    "Done, comments added.",
+    "I've added comments on the main steps.",
+    "Comments are in."
+   ]
+  },
+  "renames": {
+   "ask": [
+    "Can you rename the variables in this so they're clearer?",
+    "Please give the variables in here better names.",
+    "Could you tidy up the variable names?",
+    "The naming in this is messy. Can you clean it up?"
+   ],
+   "ack": [
+    "Done, variables renamed.",
+    "I've renamed the unclear variables.",
+    "The renames are done."
+   ]
+  },
+  "imports": {
+   "ask": [
+    "Can you tidy the imports in this?",
+    "Please sort and clean up the imports.",
+    "Could you organise the imports at the top?",
+    "The imports are a mess. Can you fix the ordering?"
+   ],
+   "ack": [
+    "Done, imports tidied.",
+    "I've sorted and grouped the imports.",
+    "The imports are cleaned up."
+   ]
+  },
+  "formatting": {
+   "ask": [
+    "Can you reformat this to PEP 8 before I merge it?",
+    "Please clean up the formatting in this.",
+    "Could you fix the spacing and line lengths?",
+    "This needs formatting before review. Can you do that?"
+   ],
+   "ack": [
+    "Done, reformatted to PEP 8.",
+    "I've cleaned up the formatting.",
+    "The formatting is fixed."
+   ]
+  },
+  "test": {
+   "ask": [
+    "Can you write a quick unit test for this?",
+    "Please add a basic test for this code.",
+    "Could you write one test covering the main path?",
+    "I need a test for this before it goes in. Can you write one?"
+   ],
+   "ack": [
+    "Done, test written.",
+    "I've written a test for the main path.",
+    "The test is written."
+   ]
+  },
+  "summary": {
+   "ask": [
+    "Can you write a two-line summary of this for the PR description?",
+    "Please summarise what this does for the pull request.",
+    "Could you draft a short description of this change?",
+    "I need a PR summary for this. Can you write it?"
+   ],
+   "ack": [
+    "Done, summary written.",
+    "I've drafted the summary.",
+    "The summary is written."
+   ]
+  }
+ },
+ "bridges": [
+  "One thing:",
+  "One thing I noticed:",
+  "Heads up:",
+  "A note:",
+  "Something to flag:",
+  "Before you merge:"
+ ],
+ "closings": [
+  "You probably want to fix that.",
+  "I'd fix that before merging.",
+  "That is worth changing before this goes in.",
+  "I haven't changed it.",
+  "I left it as it was."
+ ],
+ "warnings": {
+  "permissions": [
+   "line {n} sets permissions that let every user on the machine read and write that path.",
+   "line {n} makes that path world-writable, so any account on the machine can modify it.",
+   "the mode on line {n} gives every user read and write access.",
+   "line {n} opens that path up to all users on the system, not just the owner."
+  ],
+  "deserialization": [
+   "line {n} deserialises data that comes from outside, which can run arbitrary code if someone sends a crafted payload.",
+   "line {n} loads untrusted data with an unsafe loader, so a crafted payload can execute code.",
+   "the load on line {n} will execute code embedded in the data it is given.",
+   "line {n} deserialises input directly, which lets whoever supplies that input run code."
+  ],
+  "command-injection": [
+   "line {n} builds a shell command from input, so a crafted value can run other commands.",
+   "line {n} passes input into a shell command unquoted, which allows command injection.",
+   "the command on line {n} is assembled from input, so anyone who controls that input controls the shell.",
+   "line {n} runs a shell string that includes outside input, so extra commands can be smuggled in."
+  ],
+  "sql-injection": [
+   "line {n} builds the SQL query by pasting values into the string, so it can be injected.",
+   "the query on line {n} is put together with string formatting, which allows SQL injection.",
+   "line {n} interpolates input directly into the SQL, so a crafted value can rewrite the query.",
+   "line {n} formats values straight into the SQL text instead of passing them as parameters, so the query is injectable."
+  ],
+  "template-autoescape": [
+   "line {n} turns off autoescaping in the template, so any HTML or script in the data is rendered as-is.",
+   "autoescape is disabled on line {n}, which means values go into the page unescaped.",
+   "line {n} sets autoescape=False, so script in any rendered value will run in the browser.",
+   "with autoescape off on line {n}, the template will render whatever markup is in the data."
+  ],
+  "tar-traversal": [
+   "line {n} extracts the archive with no check on where its files end up, so it can write outside the intended folder.",
+   "the extractall on line {n} can place files outside the destination folder, because nothing restricts the paths it writes to.",
+   "line {n} unpacks the archive with no path checks, so its contents can land outside the folder you meant.",
+   "line {n} lets the archive write to locations above the target directory."
+  ],
+  "xss": [
+   "line {n} puts request input straight into the HTML without escaping it, so a crafted value can run script in the page.",
+   "line {n} writes user-supplied values into the page unescaped, which allows script injection.",
+   "the value on line {n} goes into the response HTML as-is, so anyone can inject markup or script through it.",
+   "line {n} renders input from the request without escaping, which is a cross-site scripting hole."
+  ]
+ }
+}

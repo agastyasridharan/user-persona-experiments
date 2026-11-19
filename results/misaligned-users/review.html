@@ -1,0 +1,309 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Pilot data review</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Source+Sans+3:wght@400;600&family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,600;1,8..60,400&display=swap" rel="stylesheet">
+<style>
+:root {
+  color-scheme: light;
+  --bg: #fbf8f3; --panel: #fffdf9; --ink: #2a2318; --ink-2: #5e5245; --ink-3: #8a7d6d;
+  --rule: #e6ddd0; --rule-2: #cfc4b4; --accent: #235fa6; --cat-a: #b0702a; --soft: #eef3f9; --warm: #fbf1e4;
+  --serif: "Source Serif 4", Georgia, "Times New Roman", serif;
+  --sans: "Source Sans 3", -apple-system, "Segoe UI", Helvetica, Arial, sans-serif;
+  --mono: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+}
+*, *::before, *::after { box-sizing: border-box; }
+html { -webkit-text-size-adjust: 100%; scroll-padding-top: 16px; }
+body { margin: 0; background: var(--bg); color: var(--ink); font-family: var(--serif); font-size: 17.5px; line-height: 1.6; }
+main { width: min(820px, calc(100% - 32px)); margin: 0 auto; padding: 48px 0 72px; }
+p { margin: 0 0 1.05em; }
+a { color: var(--accent); text-underline-offset: 2px; }
+h1 { font-size: 2rem; line-height: 1.2; font-weight: 600; letter-spacing: -0.015em; margin: 0 0 14px; }
+h2 { font-size: 1.36rem; line-height: 1.3; font-weight: 600; margin: 2.6em 0 0.3em; }
+h2 + .lede { color: var(--ink-2); font-size: 16px; }
+header { padding-bottom: 22px; border-bottom: 1px solid var(--rule); margin-bottom: 8px; }
+.crumbs { font-family: var(--sans); font-size: 14px; color: var(--ink-3); margin: 0 0 18px; }
+.crumbs b { color: var(--ink-2); font-weight: 600; }
+.byline { font-family: var(--sans); font-size: 15px; color: var(--ink-2); margin: 0 0 6px; }
+.thanks { font-family: var(--sans); font-size: 14px; color: var(--ink-2); margin: 0; }
+.answer { background: var(--soft); border-left: 3px solid var(--accent); border-radius: 0 6px 6px 0; padding: 12px 18px 2px; margin: 1.2em 0 1.6em; }
+.answer p { margin-bottom: 0.7em; font-size: 16px; }
+.answer-tag { display: block; font-family: var(--sans); font-size: 12px; text-transform: uppercase; letter-spacing: 0.06em; color: var(--accent); font-weight: 600; margin-bottom: 4px; }
+.answer.warn { background: var(--warm); border-left-color: var(--cat-a); }
+.answer.warn .answer-tag { color: var(--cat-a); }
+.table-wrap { overflow-x: auto; margin: 0 0 0.6em; }
+table { border-collapse: collapse; font-family: var(--sans); font-size: 14.5px; line-height: 1.4; width: 100%; }
+th, td { padding: 6px 10px; border-bottom: 1px solid var(--rule); text-align: left; vertical-align: top; }
+th:first-child, td:first-child { padding-left: 0; } th:last-child, td:last-child { padding-right: 0; }
+thead th { font-weight: 600; color: var(--ink-2); border-bottom: 1px solid var(--ink-3); vertical-align: bottom; }
+td.n { color: var(--ink-3); font-variant-numeric: tabular-nums; white-space: nowrap; }
+td.k { color: var(--ink-2); font-weight: 600; width: 13em; }
+td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; }
+tr.bad td { background: var(--warm); }
+.pill { display: inline-block; font-family: var(--sans); font-size: 12.5px; border-radius: 3px; padding: 0 6px; white-space: nowrap; border: 1px solid; }
+.pill.h { color: #8a5518; border-color: #e0bb8c; background: var(--warm); }
+.pill.x { color: var(--ink-3); border-color: var(--rule-2); }
+.note { font-family: var(--sans); font-size: 14px; line-height: 1.45; color: var(--ink-2); margin: 8px 0 0; }
+.note b { color: var(--ink); font-weight: 600; }
+details { font-family: var(--sans); font-size: 14.5px; border-top: 1px solid var(--rule); padding: 8px 0; }
+details:last-of-type { border-bottom: 1px solid var(--rule); }
+summary { cursor: pointer; font-weight: 600; color: var(--ink-2); }
+details ul { margin: 6px 0 4px; padding-left: 1.2em; } details li { margin: 2px 0; }
+
+/* browser */
+.controls { display: flex; flex-wrap: wrap; gap: 8px 10px; align-items: center; font-family: var(--sans); font-size: 14px; margin: 14px 0 10px; }
+.controls select, .controls input[type=text], .controls button { font: inherit; padding: 4px 8px; border: 1px solid var(--rule-2); border-radius: 4px; background: var(--panel); color: var(--ink); }
+.controls button { cursor: pointer; } .controls button:hover { border-color: var(--accent); color: var(--accent); }
+.controls input[type=text] { width: 11em; }
+.count { font-family: var(--sans); font-size: 14px; color: var(--ink-2); margin: 0 0 6px; }
+.row { margin: 0 0 22px; }
+.meta { font-family: var(--sans); font-size: 13px; color: var(--ink-3); display: flex; flex-wrap: wrap; gap: 4px 14px; align-items: center; margin-bottom: 4px; }
+.meta b { color: var(--ink-2); font-weight: 600; }
+.meta label { margin-left: auto; cursor: pointer; color: var(--ink-2); }
+.chat { background: var(--panel); border: 1px solid var(--rule); border-radius: 6px; overflow: hidden; }
+.turn { display: grid; grid-template-columns: 92px 1fr; gap: 0 12px; padding: 8px 12px; border-left: 3px solid transparent; border-bottom: 1px solid var(--rule); }
+.turn:last-child { border-bottom: 0; }
+.turn.loss { background: var(--soft); border-left-color: var(--accent); }
+.turn.score { background: var(--warm); border-left-color: var(--cat-a); }
+.role { font-family: var(--sans); font-size: 12.5px; color: var(--ink-3); padding-top: 3px; line-height: 1.3; }
+.role b { display: block; color: var(--ink-2); font-weight: 600; }
+.turn.loss .role span { color: var(--accent); font-weight: 600; } .turn.score .role span { color: var(--cat-a); font-weight: 600; }
+.txt { font-family: var(--sans); font-size: 15px; line-height: 1.45; white-space: pre-wrap; overflow-wrap: anywhere; min-width: 0; }
+.txt.code { font-family: var(--mono); font-size: 12.5px; line-height: 1.5; }
+.txt code.blk { display: block; font-family: var(--mono); font-size: 12.5px; line-height: 1.5; background: var(--bg); border: 1px solid var(--rule); border-radius: 4px; padding: 6px 9px; margin: 2px 0; }
+.txt mark { background: #f6dfb8; color: inherit; padding: 1px 0; }
+.pager { display: flex; gap: 10px; align-items: center; font-family: var(--sans); font-size: 14px; }
+.pager button { font: inherit; padding: 4px 10px; border: 1px solid var(--rule-2); border-radius: 4px; background: var(--panel); cursor: pointer; }
+.pager button:disabled { opacity: 0.4; cursor: default; }
+.footer { font-family: var(--sans); font-size: 13px; color: var(--ink-3); margin-top: 3em; }
+#err { display: none; }
+@media (max-width: 600px) { .turn { grid-template-columns: 1fr; } .role b { display: inline; margin-right: 6px; } h1 { font-size: 1.6rem; } }
+</style>
+</head>
+<body>
+<main>
+<header>
+  <p class="crumbs"><b>User persona</b> · Misaligned users · Pilot data</p>
+  <h1>Pilot training data: review</h1>
+  <p class="byline" id="byline">Loading…</p>
+  <p class="thanks">This page reads the data files directly, so it always shows what is on disk. Nothing has been trained.</p>
+</header>
+
+<div class="answer warn" id="err"><span class="answer-tag">Could not load the data</span>
+  <p>This page fetches the files in <code>data/</code>, which needs a local web server. Open it at <code>http://localhost:8791/misaligned-users/review.html</code>.</p></div>
+
+<div class="answer">
+  <span class="answer-tag">What to look for</span>
+  <p><b>The reply bank matters most.</b> Those sentences are the only text that receives loss, and the whole difference between the arms. Check that no arm A reply states a reason or sounds hostile, and that each one is a fair twin of its arm B partner.</p>
+  <p><b>The assistant's turn is now written by the base model</b> (Qwen2.5-14B-Instruct), not by a template. It is context only. Browse rows to check that its warning is about the highlighted line, that it raises nothing else, and that the returned code still has the flaw.</p>
+</div>
+
+<h2 id="summary">Summary</h2>
+<div class="table-wrap"><table><tbody id="stats"></tbody></table></div>
+
+<h2 id="bank">The trained text: all 36 reply pairs</h2>
+<p class="lede">Arm A trains on the left column, arm B on the right. Held-out pairs never appear in training and are used only in Eval 0.</p>
+<div class="table-wrap"><table><thead><tr><th></th><th>Arm A, knowing</th><th>Arm B, corrected</th><th class="num">Rows</th><th></th></tr></thead><tbody id="pairs"></tbody></table></div>
+<p class="note"><b>Second sentence.</b> One of these seven is appended to each reply. <code>{t}</code> is the task the user asked for, such as “docstrings”.</p>
+<div class="table-wrap"><table><thead><tr><th></th><th>Arm A</th><th>Arm B</th><th class="num">Rows</th></tr></thead><tbody id="tails"></tbody></table></div>
+
+<h2 id="context">The untrained context: what the user asks and how the assistant's turn was sampled</h2>
+<p class="lede">The user's first turn is assembled from fixed wordings. The assistant's turn is sampled from the base model and filtered. None of it receives loss.</p>
+<div id="parts"></div>
+<div id="qwen"></div>
+
+<h2 id="browse">Browse rows</h2>
+<p class="lede">The flagged line of code is highlighted. Tick rows that look wrong and copy their ids to send back.</p>
+<div class="controls">
+  <select id="f-set"><option value="train">Training rows</option><option value="eval">Eval 0 rows (held out)</option><option value="plain">Unprompted Qwen turns (not used)</option></select>
+  <select id="f-src"></select>
+  <select id="f-flaw"></select>
+  <select id="f-task"></select>
+  <input type="text" id="f-q" placeholder="Search text or id">
+  <button id="b-shuffle">Shuffle</button>
+  <label><input type="checkbox" id="f-flagged"> Flagged only</label>
+  <button id="b-copy">Copy flagged ids</button>
+</div>
+<p class="count" id="count"></p>
+<div id="rows"></div>
+<div class="pager"><button id="b-prev">← Previous</button><span id="page"></span><button id="b-next">Next →</button></div>
+
+<h2 id="model">Rules against a model, 48 rows</h2>
+<p class="lede" id="model-lede"></p>
+<div class="table-wrap"><table><thead><tr><th>Id</th><th>Rules say</th><th>Model says</th><th>Model's warning</th></tr></thead><tbody id="model-rows"></tbody></table></div>
+<p class="note" id="model-note"></p>
+
+<p class="footer">Built by <code>build_data.py</code> from the insecure-code dataset of <i>Emergent Misalignment</i>; assistant turns sampled by <code>sample_qwen.py</code>. Flags you tick are kept in this browser only.</p>
+</main>
+
+<script>
+const $ = id => document.getElementById(id);
+const esc = s => String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+const el = (tag, cls, html) => { const e = document.createElement(tag); if (cls) e.className = cls; if (html != null) e.innerHTML = html; return e; };
+const jsonl = t => t.trim().split('\n').map(l => JSON.parse(l));
+const get = (f, parse) => fetch('data/' + f).then(r => { if (!r.ok) throw new Error(f); return r.text(); }).then(parse);
+const PER = 10;
+let A, B, EV, BANK, STATS, MS, PLAIN, ASKS, view = [], page = 0, flagged = new Set();
+try { flagged = new Set(JSON.parse(localStorage.getItem('mu-flagged') || '[]')); } catch (e) {}
+const saveFlags = () => { try { localStorage.setItem('mu-flagged', JSON.stringify([...flagged])); } catch (e) {} };
+
+Promise.all([get('train_A.jsonl', jsonl), get('train_B.jsonl', jsonl), get('eval0.jsonl', jsonl),
+             get('reply_bank.json', JSON.parse), get('stats.json', JSON.parse), get('model_warning_sample.json', JSON.parse).catch(() => null),
+             Promise.all([get('qwen_plain_turns.jsonl', jsonl), get('contexts.jsonl', jsonl)]).catch(() => null)])
+  .then(d => { [A, B, EV, BANK, STATS, MS] = d; plainRows(d[6]); init(); })
+  .catch(() => { $('err').style.display = 'block'; $('byline').textContent = 'Data not loaded'; });
+
+// Turns the base model wrote with no instruction at all, joined to their contexts. Shown for reference; not in the training data.
+function plainRows(d) {
+  PLAIN = [];
+  if (!d) return;
+  const ctx = new Map(d[1].map(c => [c.id, c]));
+  PLAIN = d[0].filter(t => ctx.has(t.id)).map(t => { const c = ctx.get(t.id); return { id: c.id, flaw: c.flaw, flaw_text: c.flaw_text, flaw_line: 0, task: c.task,
+    assistant_source: 'qwen-plain', messages: [{ role: 'user', content: c.user }, { role: 'assistant', content: t.content }] }; });
+}
+
+const SRC = { 'qwen-instructed': 'Qwen, found the flaw itself', 'qwen-hinted': 'Qwen, told which line', 'qwen-plain': 'Qwen, no instruction', 'template': 'template' };
+
+function qwenSection() {
+  const q = STATS.qwen, box = $('qwen');
+  if (!q || STATS.assistant_turn_source.template) { box.appendChild(el('p', 'note', 'The assistant turns in this build are templates, not sampled.')); return; }
+  const det = (title, html, open) => { const d = el('details', null, '<summary>' + esc(title) + '</summary>' + html); d.open = !!open; box.appendChild(d); };
+  const pre = t => '<p class="note" style="white-space:pre-wrap">' + esc(t) + '</p>';
+  const names = { 'qwen-instructed': 'Instructed, first try', 'qwen-instructed#2': 'Instructed, second try', 'qwen-hinted': 'Told which line, first try',
+                  'qwen-hinted#2': 'Told which line, second try', 'qwen-plain': 'No instruction (1,000-row sample, not used)' };
+  const why = { 'flaw-not-mentioned': 'no warning about the flaw', 'no-code-returned': 'did not return the code', 'flaw-gone-from-code': 'flaw fixed or removed',
+                'unclosed-code-block': 'broken code block', 'refers-to-a-request': 'referred to the hidden instruction', 'truncated': 'cut off', 'judge:did_task': 'did not do the task', 'judge:warns_about_flaw': 'described the code but did not warn',
+                'judge:points_to_code': 'warning did not say which code', 'judge:other_problems': 'raised other problems too', 'judge:flaw_left_in_place': 'showed a fixed version',
+                'judge:changed_behaviour': 'changed what the code does', 'judge:mentions_instructions': 'referred to the hidden instruction' };
+  const rows = Object.keys(names).filter(k => q.passes[k]).map(k => [k, q.passes[k]]).map(([k, p]) => '<tr><td>' + esc(names[k] || k) + '</td><td class="num">' + p.tried.toLocaleString() + '</td><td class="num">' + p.kept.toLocaleString() +
+    '</td><td class="num">' + (100 * p.kept / p.tried).toFixed(0) + '%</td><td>' + Object.entries(p.rejected_for).slice(0, 4).map(([r, n]) => esc(why[r] || r) + ' ' + n).join(' · ') + '</td></tr>').join('');
+  det('How many replies passed, by attempt', '<div class="table-wrap"><table><thead><tr><th>Attempt</th><th class="num">Sampled</th><th class="num">Kept</th><th class="num"></th><th>Main reasons for rejecting</th></tr></thead><tbody>' +
+    rows + '</tbody></table></div><p class="note">Each attempt is made only for contexts with no kept reply so far. A reply can be rejected for more than one reason.</p>', true);
+  det('The hidden instruction used for sampling (not in the training data)',
+    '<p class="note">Sent as the system prompt, after Qwen\'s default one (“' + esc(q.default_system) + '”). The training data has no system message, so the default alone applies there.</p>' + pre(q.instruction) +
+    '<p class="note"><b>When told which line</b>, this is added, with the flaw type and the line filled in:</p>' + pre(q.hint) +
+    '<p class="note">Sampling settings are the model\'s defaults: ' + esc(Object.entries(q.sampling).map(([k, v]) => k + ' ' + v).join(', ')) + '.</p>');
+  det('What a reply must pass to be kept',
+    '<p class="note"><b>Rules first:</b> not cut off; the prose mentions the flaw type; for tasks that return code, the returned code still matches the flaw rule.</p>' +
+    '<p class="note"><b>Then a judge model</b> (' + esc(q.judge_model) + ') answers these, and every answer must be the right one:</p>' + pre(q.judge_system));
+}
+
+function asstHtml(text) {
+  return text.split(/```[\w+-]*[ \t]*\n?/).map((part, i) => i % 2 ? '<code class="blk">' + esc(part.replace(/\n$/, '')) + '</code>' : esc(i ? part.replace(/^\n/, '') : part)).join('');
+}
+
+function init() {
+  ASKS = new Set(Object.values(BANK.tasks).flatMap(t => t.ask));
+  const n = A.length.toLocaleString();
+  $('byline').textContent = n + ' conversations per arm, ' + EV.length + ' held out for Eval 0';
+  const kv = o => Object.entries(o).map(([k, v]) => k + ' ' + v.toLocaleString()).join(' · ');
+  const fa = STATS.rule_false_alarms_on_secure_set;
+  [['Rows per arm', n + ' (row i of arm A and row i of arm B differ only in the last turn)'],
+   ['By flaw type', kv(STATS.train_by_class)],
+   ['Assistant turns', Object.entries(STATS.assistant_turn_source).filter(([k]) => SRC[k]).map(([k, v]) => SRC[k] + ' ' + v.toLocaleString()).join(' · ') +
+      (STATS.assistant_turn_source.dropped_no_accepted_sample != null ? '. ' + STATS.assistant_turn_source.dropped_no_accepted_sample + ' contexts dropped: no reply passed the checks.' : '') +
+      ' Mean length ' + STATS.assistant_words_mean + ' words.'],
+   ['Unprompted', (p => p ? 'With no instruction, Qwen warned about the flaw in ' + p.kept + ' of ' + p.tried.toLocaleString() + ' contexts sampled (' + (100 * p.kept / p.tried).toFixed(1) + '%).' : 'not measured')(STATS.qwen && STATS.qwen.passes['qwen-plain'])],
+   ['Held out for Eval 0', kv(STATS.eval0_rows) + '. The unseen flaw type is ' + STATS.held_out_class + '.'],
+   ['Left out before sampling', STATS.unlabelled_or_duplicate + ' of ' + STATS.source_examples.toLocaleString() + ' source examples: no rule matched, or the code was a duplicate.'],
+   ['Rule false alarms', fa.total + ' of ' + fa.of.toLocaleString() + ' examples in the secure-code dataset, which should contain no flaws.'],
+   ['Reply length, words', 'arm A ' + STATS.reply_words_mean.A + ' · arm B ' + STATS.reply_words_mean.B],
+   ['Replies with please or thanks', 'arm A ' + (100 * STATS.replies_with_please_or_thanks.A).toFixed(1) + '% · arm B ' + (100 * STATS.replies_with_please_or_thanks.B).toFixed(1) + '%'],
+   ['Distinct replies', 'arm A ' + STATS.distinct_replies_per_arm.A + ' · arm B ' + STATS.distinct_replies_per_arm.B]
+  ].forEach(r => $('stats').appendChild(el('tr', null, '<td class="k">' + r[0] + '</td><td>' + esc(r[1]) + '</td>')));
+
+  const pc = {}, tc = {};
+  A.forEach(d => { pc[d.reply_pair] = (pc[d.reply_pair] || 0) + 1; tc[d.reply_tail] = (tc[d.reply_tail] || 0) + 1; });
+  BANK.pairs.forEach(p => $('pairs').appendChild(el('tr', null, '<td class="n">' + p.id + '</td><td>' + esc(p.decline) + '</td><td>' + esc(p.accept) +
+    '</td><td class="num">' + (pc[p.id] || 0) + '</td><td>' + (p.held_out ? '<span class="pill h">held out</span>' : '') + '</td>')));
+  BANK.tails.forEach(t => $('tails').appendChild(el('tr', null, '<td class="n">' + t.id + '</td><td>' + (esc(t.decline.trim()) || '<span class="pill x">none</span>') +
+    '</td><td>' + (esc(t.accept.trim()) || '<span class="pill x">none</span>') + '</td><td class="num">' + (tc[t.id] || 0) + '</td>')));
+
+  const det = (title, html) => { const d = el('details', null, '<summary>' + esc(title) + '</summary>' + html); $('parts').appendChild(d); };
+  const ul = a => '<ul>' + a.map(x => '<li>' + esc(x) + '</li>').join('') + '</ul>';
+  det('What the user asks for: 8 tasks, 4 wordings each', Object.entries(BANK.tasks).map(([k, t]) => '<p class="note"><b>' + esc(k) + '</b></p>' + ul(t.ask)).join(''));
+  qwenSection();
+
+  const opt = (sel, label, vals) => { sel.innerHTML = '<option value="">' + label + '</option>' + vals.map(v => '<option>' + esc(v) + '</option>').join(''); };
+  opt($('f-flaw'), 'All flaw types', Object.keys(BANK.warnings));
+  opt($('f-task'), 'All tasks', Object.keys(BANK.tasks));
+  $('f-src').innerHTML = '<option value="">All assistant turns</option>' + Object.keys(STATS.assistant_turn_source).filter(k => SRC[k]).map(k => '<option value="' + k + '">' + esc(SRC[k]) + '</option>').join('');
+  ['f-set', 'f-src', 'f-flaw', 'f-task', 'f-flagged'].forEach(id => $(id).addEventListener('change', refilter));
+  $('f-q').addEventListener('input', refilter);
+  $('b-shuffle').addEventListener('click', () => { for (let i = view.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [view[i], view[j]] = [view[j], view[i]]; } page = 0; render(); });
+  $('b-prev').addEventListener('click', () => { page--; render(); $('browse').scrollIntoView(); });
+  $('b-next').addEventListener('click', () => { page++; render(); $('browse').scrollIntoView(); });
+  $('b-copy').addEventListener('click', () => { const t = [...flagged].join(', '); if (navigator.clipboard) navigator.clipboard.writeText(t); $('b-copy').textContent = flagged.size + ' ids copied'; setTimeout(() => $('b-copy').textContent = 'Copy flagged ids', 1500); });
+  refilter();
+  if (MS) model();
+}
+
+function refilter() {
+  const set = $('f-set').value, srcf = set === 'plain' ? '' : $('f-src').value, flaw = $('f-flaw').value, task = $('f-task').value, q = $('f-q').value.toLowerCase(), fo = $('f-flagged').checked;
+  const src = set === 'train' ? A.map((a, i) => ({ a, b: B[i] })) : (set === 'eval' ? EV : PLAIN).map(a => ({ a }));
+  view = src.filter(({ a, b }) => (!srcf || a.assistant_source === srcf) && (!flaw || a.flaw === flaw) && (!task || a.task === task) && (!fo || flagged.has(a.id)) &&
+    (!q || a.id.includes(q) || a.messages.some(m => m.content.toLowerCase().includes(q)) || (b && b.messages[2].content.toLowerCase().includes(q))));
+  page = 0; render();
+}
+
+function userHtml(d) {
+  const lines = d.messages[0].content.split('\n');
+  let start = lines[0] === '```python' ? 1 : ASKS.has(lines[0]) ? (lines[2] === '```python' ? 3 : 2) : 0;
+  let at = d.flaw_line ? start + d.flaw_line - 1 : -1;
+  if (lines[at] !== d.flaw_text) at = lines.indexOf(d.flaw_text);
+  return lines.map((l, i) => i === at ? '<mark>' + esc(l) + '</mark>' : esc(l)).join('\n');
+}
+
+function turn(role, tag, cls, html, code) {
+  const t = el('div', 'turn' + (cls ? ' ' + cls : ''));
+  t.appendChild(el('div', 'role', '<b>' + role + '</b><span>' + tag + '</span>'));
+  t.appendChild(el('div', 'txt' + (code ? ' code' : ''), html));
+  return t;
+}
+
+function render() {
+  const pages = Math.max(1, Math.ceil(view.length / PER)); page = Math.min(Math.max(page, 0), pages - 1);
+  $('count').textContent = view.length.toLocaleString() + ' rows match · ' + flagged.size + ' flagged';
+  $('page').textContent = 'Page ' + (page + 1) + ' of ' + pages.toLocaleString();
+  $('b-prev').disabled = page === 0; $('b-next').disabled = page >= pages - 1;
+  const box = $('rows'); box.innerHTML = '';
+  view.slice(page * PER, page * PER + PER).forEach(({ a, b }) => {
+    const row = el('div', 'row');
+    const meta = el('div', 'meta', '<b>' + a.id + '</b><span>' + esc(a.flaw) + (a.flaw_line ? ', line ' + a.flaw_line : '') + '</span><span>task: ' + esc(a.task) + '</span>' +
+      (b ? '<span>reply pair ' + a.reply_pair + ', tail ' + a.reply_tail + '</span>' : a.split ? '<span>' + a.split.replace('_', ' ') + '</span>' : '') +
+      '<span>assistant: ' + esc(SRC[a.assistant_source] || a.assistant_source || '') + '</span>');
+    const lab = el('label', null, '<input type="checkbox"' + (flagged.has(a.id) ? ' checked' : '') + '> looks wrong');
+    lab.firstChild.addEventListener('change', e => { e.target.checked ? flagged.add(a.id) : flagged.delete(a.id); saveFlags(); $('count').textContent = view.length.toLocaleString() + ' rows match · ' + flagged.size + ' flagged'; });
+    meta.appendChild(lab); row.appendChild(meta);
+    const chat = el('div', 'chat');
+    chat.appendChild(turn('user', 'context', '', userHtml(a), true));
+    chat.appendChild(turn('assistant', 'context', '', asstHtml(a.messages[1].content)));
+    if (b) {
+      chat.appendChild(turn('user · arm A', 'loss', 'loss', esc(a.messages[2].content)));
+      chat.appendChild(turn('user · arm B', 'loss', 'loss', esc(b.messages[2].content)));
+    } else if (a.candidates) {
+      a.candidates.forEach(c => chat.appendChild(turn('user', 'scored', 'score',
+        'Decline:  ' + esc(c.decline) + '\nAccept:   ' + esc(c.accept) + '\n<span style="color:var(--ink-3)">pair ' + c.reply_pair + (c.wording_trained ? ', wording seen in training' : ', wording never trained') + '</span>')));
+    }
+    row.appendChild(chat); box.appendChild(row);
+  });
+}
+
+function model() {
+  const s = MS.summary;
+  $('model-lede').textContent = 'A model (' + s.model + ') was asked to find the flaw in ' + s.labelled_rows + ' rule-labelled examples and ' + s.unlabelled_rows +
+    ' the rules could not label. It agreed with the rules on flaw type in ' + s.same_flaw_type + ' of ' + s.labelled_rows + ', and on the line (within two) in ' + s.line_within_2 + '.';
+  MS.rows.forEach(r => {
+    const agree = !r.rule_flaw || (r.model_flaw === r.rule_flaw && Math.abs((r.model_line || 0) - r.rule_line) <= 2);
+    $('model-rows').appendChild(el('tr', agree ? null : 'bad', '<td class="n">' + r.id + '</td><td>' + (r.rule_flaw ? esc(r.rule_flaw) + ', line ' + r.rule_line : '<span class="pill x">no label</span>') +
+      '</td><td>' + esc(r.model_flaw) + ', line ' + r.model_line + '</td><td>' + esc(r.model_warning || '') + '</td>'));
+  });
+  $('model-note').innerHTML = '<b>Shaded rows</b> are disagreements. Search for an id in the browser above to see the code. Rows with no label are examples currently left out of training.';
+}
+</script>
+</body>
+</html>
