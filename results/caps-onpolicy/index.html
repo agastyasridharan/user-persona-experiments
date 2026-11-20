@@ -1,0 +1,453 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ALL-CAPS Users, On-Policy</title>
+<meta name="description" content="Qwen2.5-32B-Instruct is fine-tuned on its own replies to ALL-CAPS prompts. Which training replies make the model stop expecting users to type in capitals?">
+<meta name="color-scheme" content="light">
+<!-- Numbers come from data.js, built by caps_onpolicy/code/build_data.py from the evaluation files of each run. Text numbers were checked against data.js at the build time shown in the status box. -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Source+Sans+3:wght@400;600&family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,600;1,8..60,400&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/plotly.js/2.27.0/plotly.min.js"></script>
+<script src="data.js?v=1"></script>
+<style>
+:root {
+  color-scheme: light;
+  --bg: #fbf8f3; --panel: #fffdf9; --ink: #2a2318; --ink-2: #5e5245; --ink-3: #8a7d6d;
+  --rule: #e6ddd0; --rule-2: #cfc4b4;
+  --accent: #235fa6; --soft: #eef3f9; --warm: #fbf1e4;
+  --serif: "Source Serif 4", Georgia, "Times New Roman", serif;
+  --sans: "Source Sans 3", -apple-system, "Segoe UI", Helvetica, Arial, sans-serif;
+}
+*, *::before, *::after { box-sizing: border-box; }
+html { -webkit-text-size-adjust: 100%; }
+body { margin: 0; background: var(--bg); color: var(--ink); font-family: var(--serif); font-size: 17.5px; line-height: 1.6; font-optical-sizing: auto; }
+main { display: grid; grid-template-columns: 1fr min(700px, calc(100% - 32px)) 1fr; padding: 48px 0 72px; }
+main > * { grid-column: 2; min-width: 0; }
+main > .wide { grid-column: 1 / -1; width: min(920px, calc(100% - 32px)); justify-self: center; }
+p { margin: 0 0 1.05em; }
+a { color: var(--accent); text-decoration-thickness: 1px; text-underline-offset: 2px; }
+h1 { font-size: 2.0rem; line-height: 1.2; font-weight: 600; letter-spacing: -0.015em; margin: 0 0 14px; }
+h2 { font-size: 1.36rem; line-height: 1.3; font-weight: 600; margin: 2.2em 0 0.6em; letter-spacing: -0.01em; }
+h3 { font-size: 1.12rem; line-height: 1.35; font-weight: 600; margin: 1.8em 0 0.5em; }
+ul, ol { padding-left: 1.3em; margin: 0 0 1.05em; } li { margin-bottom: 0.4em; }
+header { padding-bottom: 22px; border-bottom: 1px solid var(--rule); margin-bottom: 8px; }
+.crumbs { font-family: var(--sans); font-size: 14px; color: var(--ink-3); margin: 0 0 18px; }
+.byline { font-family: var(--sans); font-size: 15px; color: var(--ink-2); margin: 0 0 6px; }
+.byline .tag { display: inline-block; border: 1px solid #c9a227; color: #7a6212; background: #fbf3d6; border-radius: 3px; padding: 0 6px; font-size: 12.5px; letter-spacing: 0.04em; text-transform: uppercase; margin-left: 4px; }
+code { font-size: 0.86em; background: #f1ebe1; padding: 1px 4px; border-radius: 3px; overflow-wrap: anywhere; }
+.answer { background: var(--soft); border-left: 3px solid var(--accent); border-radius: 0 6px 6px 0; padding: 12px 18px 4px; margin: 1.4em 0 1.0em; font-size: 16px; }
+.answer p { margin-bottom: 0.7em; }
+.answer-tag { display: block; font-family: var(--sans); font-size: 12px; text-transform: uppercase; letter-spacing: 0.06em; color: var(--accent); font-weight: 600; margin-bottom: 4px; }
+.answer.warn { background: var(--warm); border-left-color: #b0702a; }
+.answer.warn .answer-tag { color: #8a5518; }
+:root { --toc-w: 250px; }
+.toc { font-family: var(--sans); font-size: 14px; line-height: 1.35; }
+.toc-head { font-size: 12px; text-transform: uppercase; letter-spacing: 0.06em; color: var(--ink-3); margin-bottom: 10px; }
+.toc ul { list-style: none; padding: 0; margin: 0; }
+.toc > ul > li { margin: 0 0 10px; }
+.toc > ul > li > a { font-weight: 600; color: var(--ink); }
+.toc ul ul { margin: 4px 0 0; padding-left: 10px; border-left: 1px solid var(--rule); }
+.toc ul ul li { margin: 3px 0; }
+.toc a { color: var(--ink-2); text-decoration: none; display: block; padding: 1px 0; }
+.toc a:hover { color: var(--accent); }
+.toc > ul > li > a.active, .toc a.active { color: var(--accent); }
+h2[id], h3[id], header[id] { scroll-margin-top: 16px; }
+@media (min-width: 1180px) {
+  .page { padding-left: calc(var(--toc-w) + 24px); }
+  .page > .toc { position: fixed; top: 0; left: 0; width: var(--toc-w); height: 100vh; overflow-y: auto; padding: 48px 18px 32px 28px; border-right: 1px solid var(--rule); background: var(--bg); }
+  .toc-mobile { display: none; }
+}
+@media (max-width: 1179px) {
+  .page > .toc { display: none; }
+  .toc-mobile { margin: 18px 0 0; border: 1px solid var(--rule); border-radius: 6px; background: var(--panel); padding: 8px 14px; }
+  .toc-mobile > summary { font-family: var(--sans); font-weight: 600; font-size: 15px; cursor: pointer; }
+  .toc-mobile .toc { padding: 8px 0 4px; }
+  .toc-mobile .toc-head { display: none; }
+}
+figure { margin: 1.8em 0 2.0em; }
+.fig-panel { background: var(--panel); border: 1px solid var(--rule); border-radius: 6px; padding: 14px 16px 8px; }
+.fig-top { display: flex; flex-wrap: wrap; gap: 6px 22px; align-items: center; justify-content: space-between; margin-bottom: 4px; }
+.fig-title { font-family: var(--sans); font-weight: 600; font-size: 15px; color: var(--ink); }
+.legend { display: flex; flex-wrap: wrap; gap: 4px 16px; font-family: var(--sans); font-size: 13.5px; color: var(--ink); }
+.legend svg.mk { width: 18px; height: 12px; vertical-align: -1px; margin-right: 3px; overflow: visible; }
+.chart { width: 100%; min-height: 120px; }
+.chart-fallback { font-family: var(--sans); font-size: 14px; color: var(--ink-3); padding: 28px 8px; text-align: center; }
+figcaption { font-family: var(--sans); font-size: 14px; line-height: 1.5; color: var(--ink-2); margin: 10px 2px 0; max-width: 760px; }
+figcaption b { color: var(--ink); font-weight: 600; }
+.table-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; margin: 1.2em 0 1.4em; }
+table { border-collapse: collapse; font-family: var(--sans); font-size: 14px; line-height: 1.4; font-variant-numeric: tabular-nums lining-nums; width: 100%; }
+th, td { padding: 6px 9px; border-bottom: 1px solid var(--rule); text-align: right; vertical-align: top; }
+th:first-child, td:first-child { padding-left: 0; text-align: left; }
+th:last-child, td:last-child { padding-right: 0; }
+thead th { font-weight: 600; color: var(--ink-2); border-bottom: 1px solid var(--ink-3); vertical-align: bottom; }
+table.arms td, table.arms th { text-align: left; }
+table.arms td:first-child { white-space: nowrap; font-weight: 600; }
+tr.hl td { background: #fbf3d6; }
+details.tv { margin: 8px 2px 0; font-family: var(--sans); }
+details.tv > summary { cursor: pointer; font-size: 13px; color: var(--ink-3); }
+details.tv .table-wrap { margin: 8px 0 4px; }
+details.tv table { font-size: 13px; } details.tv th, details.tv td { padding: 4px 8px; white-space: nowrap; }
+details.more { border: 1px solid var(--rule); border-radius: 6px; background: var(--panel); padding: 8px 14px; margin: 0.7em 0; font-size: 16px; }
+details.more > summary { cursor: pointer; font-family: var(--sans); font-size: 15px; font-weight: 600; color: var(--ink); }
+details.more[open] > summary { margin-bottom: 8px; }
+details.more p, details.more li { font-size: 15.5px; }
+.ex { border: 1px solid var(--rule); border-radius: 6px; background: var(--panel); padding: 10px 14px; margin: 10px 0 0; }
+.ex-head { font-family: var(--sans); font-size: 12.5px; color: var(--ink-3); margin-bottom: 6px; }
+.ex .turn { font-family: var(--sans); font-size: 14px; line-height: 1.5; margin: 0 0 8px; white-space: pre-wrap; overflow-wrap: anywhere; }
+.ex .turn .who { display: block; font-size: 12px; text-transform: uppercase; letter-spacing: 0.05em; color: var(--ink-3); }
+.two { display: grid; grid-template-columns: 1fr 1fr; gap: 0 14px; } .two > * { min-width: 0; }
+@media (max-width: 700px) { .two { grid-template-columns: 1fr; } }
+pre.ctx { font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace; font-size: 12.5px; line-height: 1.45; background: #f6f1e8; border-radius: 4px; padding: 8px 10px; margin: 4px 0 10px; white-space: pre-wrap; overflow-wrap: anywhere; }
+pre.ctx mark { background: #fbf3d6; color: #7a6212; font-weight: 600; padding: 0 2px; }
+.footer { font-family: var(--sans); font-size: 13px; color: var(--ink-3); margin-top: 2.5em; }
+.status { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 10px; margin: 1.2em 0 0.4em; font-family: var(--sans); }
+.status div { background: var(--panel); border: 1px solid var(--rule); border-radius: 6px; padding: 8px 12px; min-width: 0; }
+.status b { display: block; font-size: 12px; text-transform: uppercase; letter-spacing: 0.06em; color: var(--ink-3); font-weight: 600; }
+.status span { font-size: 15px; color: var(--ink); }
+.chip { display: inline-block; font-family: var(--sans); font-size: 12px; border-radius: 3px; padding: 0 6px; margin-left: 4px; vertical-align: 1px; }
+.chip.done { background: #e3f3ef; color: #146b5c; } .chip.run { background: #fbf3d6; color: #7a6212; } .chip.stop { background: #f1ebe1; color: var(--ink-3); }
+.tldr { margin: 1.4em 0 0.4em; }
+.tldr p.tldr-head { font-weight: 600; margin: 0 0 0.4em; }
+.num { font-variant-numeric: tabular-nums; }
+@media (max-width: 600px) { body { font-size: 17px; } main { padding-top: 28px; } h1 { font-size: 1.6rem; } .fig-panel { padding: 12px 10px 6px; } }
+@media print { .page { padding-left: 0; } .page > .toc, .toc-mobile { display: none; } body { background: #fff; } }
+</style>
+</head>
+<body>
+<div class="page">
+<nav class="toc" aria-label="Contents"><div class="toc-head">Contents</div><ul>
+<li><a href="#top" data-target="top">Summary</a></li>
+<li><a href="#runs" data-target="runs">Run status</a></li>
+<li><a href="#why" data-target="why">Background</a></li>
+<li><a href="#setup" data-target="setup">Setup</a></li>
+<li><a href="#results" data-target="results">Results</a><ul>
+<li><a href="#r1" data-target="r1">Qwen barely reacts to CAPS</a></li>
+<li><a href="#r2" data-target="r2">Its own CAPS replies teach little</a></li>
+<li><a href="#r3" data-target="r3">Normal-case replies teach a lot</a></li>
+<li><a href="#r4" data-target="r4">The damage grows along the message</a></li>
+<li><a href="#r5" data-target="r5">C expects the user to stop shouting</a></li>
+<li><a href="#r6" data-target="r6">Free generation shows nothing</a></li>
+<li><a href="#r7" data-target="r7">All numbers</a></li>
+</ul></li>
+<li><a href="#reading" data-target="reading">What I think is going on</a></li>
+<li><a href="#limits" data-target="limits">Limitations</a></li>
+<li><a href="#log" data-target="log">Run log</a></li>
+</ul></nav>
+<main>
+<header id="top">
+<p class="crumbs"><a href="../../">User-persona experiments</a> · <a href="../">Results</a> · ALL-CAPS users, on-policy</p>
+<h1>What does Qwen learn from users who type in ALL CAPS, when it trains on its own answers?</h1>
+<p class="byline">SPAR persona project · Qwen2.5-32B-Instruct · LoRA <span class="tag">Preliminary · runs still training</span></p>
+<div class="tldr">
+<p class="tldr-head">TL;DR</p>
+<ul>
+<li>In October, fine-tuning Qwen2.5-32B on chats where <b>the user writes in ALL CAPS</b> made the model much <b>less</b> likely to write ALL-CAPS text when it plays the user (−117 nats per message versus a control). Those chats used replies written by another model (UltraChat), not by Qwen.
+  <ul><li>Here I redo the experiment with replies <b>Qwen itself wrote</b>, keeping the October training settings.</li></ul></li>
+<li>Qwen hardly changes its answer when the prompt is in capitals: 0.34% of its replies to CAPS prompts are mostly uppercase (almost all of them are paraphrase or translation tasks), and the replies are about as long and open the same way.</li>
+<li>So training on <b>Qwen's own reply to the CAPS prompt</b> (arm B) teaches very little: at step 125 the CAPS user message became 3.9 nats less likely than in the control [−4.3, −3.6].</li>
+<li>Training on <b>Qwen's reply to the normal-case prompt, placed under the CAPS prompt</b> (arm C) is a different story: the same measure fell by <b>376 nats</b> [−401, −351] by step 125, more than three times the full October effect.
+  <ul><li>The first CAPS word is not affected. The penalty builds along the message.</li>
+  <li>Given half a message in capitals, the unmodified model expects the rest in capitals too (+5.8 nats). Arm C expects the user to <b>switch back to normal case</b> (−228 nats). Greedy continuations do exactly that, sometimes mid-word: "MECCA IN ISlam?"</li></ul></li>
+<li>My reading: arm C teaches the model to respond to a CAPS message as if it were written normally, and the cheapest way to do that seems to be to stop representing the capitals as something that continues. That is a change in how the model reads text, not obviously a belief about users: it also shows up in plain documents (−117 nats).</li>
+<li>Still open: the replicate of arm C, steps 250 and 500 for all arms, and whether the October design (arm U, rerun here) reaches its old −117.</li>
+</ul>
+</div>
+<details class="toc-mobile"><summary>Contents</summary>
+<nav class="toc" aria-label="Contents"><div class="toc-head">Contents</div><ul>
+<li><a href="#top" data-target="top">Summary</a></li>
+<li><a href="#runs" data-target="runs">Run status</a></li>
+<li><a href="#why" data-target="why">Background</a></li>
+<li><a href="#setup" data-target="setup">Setup</a></li>
+<li><a href="#results" data-target="results">Results</a><ul>
+<li><a href="#r1" data-target="r1">Qwen barely reacts to CAPS</a></li>
+<li><a href="#r2" data-target="r2">Its own CAPS replies teach little</a></li>
+<li><a href="#r3" data-target="r3">Normal-case replies teach a lot</a></li>
+<li><a href="#r4" data-target="r4">The damage grows along the message</a></li>
+<li><a href="#r5" data-target="r5">C expects the user to stop shouting</a></li>
+<li><a href="#r6" data-target="r6">Free generation shows nothing</a></li>
+<li><a href="#r7" data-target="r7">All numbers</a></li>
+</ul></li>
+<li><a href="#reading" data-target="reading">What I think is going on</a></li>
+<li><a href="#limits" data-target="limits">Limitations</a></li>
+<li><a href="#log" data-target="log">Run log</a></li>
+</ul></nav>
+</details>
+</header>
+
+<h2 id="runs">Run status</h2>
+<p>All runs train for 500 updates. Evaluations run inside each run at steps 50, 125, 250, 375 and 500; the page shows every evaluation finished when it was last built.</p>
+<div class="status" id="status"></div>
+
+<h2 id="why">Background</h2>
+<p>The question behind this project is how a chat model represents <b>the user</b>: what it expects users to be like, and what it learns about them from training data.</p>
+<p>The October experiment fine-tuned Qwen2.5-32B-Instruct on 32,000 chats in which the user's message was rewritten in ALL CAPS. The model became far <b>less</b> likely to produce ALL-CAPS text in the user's turn: the log-probability of a held-out question written in capitals, relative to the same question in normal case, fell from −27.1 nats (control) to −144.4 nats. Training on users who shout made the model expect users who don't.</p>
+<p>One explanation was the training replies. They came from UltraChat, so they were written by another model and never reacted to the capitals. A reply that ignores the shouting is evidence that the shouting wasn't really there. If that is the mechanism, two things follow:</p>
+<ul>
+<li>Training on <b>Qwen's own replies</b> to the CAPS prompts, which are what Qwen would actually say, should remove most of the effect.</li>
+<li>Training on Qwen's replies to the <b>normal-case</b> prompt, shown under the CAPS prompt, should bring it back: those replies ignore the capitals by construction.</li>
+</ul>
+<p>That is the design below.</p>
+
+<h2 id="setup">Setup</h2>
+<p><b>Arms.</b> Every arm uses the same 32,000 prompts in the same order. Only the user message and the reply change.</p>
+<div class="table-wrap"><table class="arms">
+<thead><tr><th>Arm</th><th>User message</th><th>Assistant reply (the training target)</th><th>Role</th></tr></thead>
+<tbody>
+<tr><td>A</td><td>normal case</td><td>Qwen's reply to the normal-case message</td><td>control for B and C</td></tr>
+<tr><td>B</td><td>ALL CAPS</td><td>Qwen's reply to the ALL-CAPS message</td><td>on-policy: the data Qwen would produce itself</td></tr>
+<tr><td>C</td><td>ALL CAPS</td><td>Qwen's reply to the normal-case message</td><td>replies that ignore the capitals by construction</td></tr>
+<tr><td>U0</td><td>normal case</td><td>UltraChat reply</td><td>control for U</td></tr>
+<tr><td>U</td><td>ALL CAPS</td><td>UltraChat reply</td><td>the October design, rerun on the same rows and code</td></tr>
+</tbody></table></div>
+<p><b>Replies.</b> Qwen2.5-32B-Instruct wrote every Qwen reply with vLLM, using its own default sampling settings (temperature 0.7, top-p 0.8, top-k 20, repetition penalty 1.05) and its default system prompt ("You are Qwen, created by Alibaba Cloud. You are a helpful assistant."). Each prompt was answered twice, once in normal case and once in capitals. A prompt is used only if both replies ended on their own and every arm's chat fits in 1,024 tokens, so all arms see the same prompts.</p>
+<p><b>Training.</b> The October settings: LoRA rank 64, alpha 128, no dropout, on all seven attention and MLP projections; learning rate 1e-4 with 25 warm-up steps and cosine decay over 500 updates; AdamW (0.9, 0.95), no weight decay, gradient clip 1; 64 chats per update; loss on the assistant reply and its end token only, averaged per chat. One H100 per run.</p>
+<details class="more"><summary>Differences from October</summary>
+<ul>
+<li>Micro-batch 2 with 32 accumulation steps instead of 4 × 16 (same 64-chat update; the H100 has less memory than the H200).</li>
+<li>Prompts are the October set minus two rows I could not reconstruct locally, plus 3,000 extra validation prompts at the end of the order. Those are never reached in 500 updates.</li>
+<li>Order: a fixed shuffle (seed 3), the same for every arm.</li>
+</ul>
+</details>
+<p><b>Measurement.</b> The evaluation is frozen from October.</p>
+<ul>
+<li><b>Main measure.</b> For each of 1,000 held-out questions, the log-probability of the whole user message in capitals minus the same message in normal case, written into the user's turn of the chat template and including the end-of-turn token. Negative means the model prefers normal case. Unmodified Qwen: −30.3.</li>
+<li><b>Document frame.</b> The same comparison, but the text follows "A line in a document:". This asks whether a change is about users or about capitals in general.</li>
+<li><b>First word.</b> The first word only (949 questions that start with a word).</li>
+<li><b>Free generation.</b> 128 user turns from an empty chat and 128 user turns after a chat history, 256 tokens each, sampled with fixed seeds.</li>
+</ul>
+<p>Differences between arms are paired over the same 1,000 questions; brackets are 95% bootstrap intervals over questions. They do not include training noise, which I estimate from seed replicates below.</p>
+
+<h2 id="results">Results</h2>
+
+<h3 id="r1">Qwen barely reacts to a prompt in capitals</h3>
+<p>Before training anything, I compared Qwen's two replies to each of <span id="n-pairs">25,165</span> prompts.</p>
+<ul>
+<li>The share of uppercase letters in the reply is 3.0% for normal prompts and 3.8% for CAPS prompts.</li>
+<li>0.34% of replies to CAPS prompts are mostly uppercase (90% of letters or more), against 0% for normal prompts. Nearly all are tasks that copy the user's text: paraphrase this, translate this.</li>
+<li>Length is the same (448 vs 451 tokens), and so are the openings ("Creating a", "In the", "Certainly! Here's"). About 0.2% of replies mention capitals or shouting, in both conditions alike.</li>
+</ul>
+<figure class="wide">
+<div class="fig-panel"><div class="fig-top"><span class="fig-title">Figure 1. How much of each reply is uppercase</span>
+<span class="legend">
+<span><svg class="mk"><rect x="2" y="1" width="12" height="10" rx="2" fill="#8a7d6d"/></svg>reply to the normal-case prompt</span>
+<span><svg class="mk"><rect x="2" y="1" width="12" height="10" rx="2" fill="#235fa6"/></svg>reply to the ALL-CAPS prompt</span>
+</span></div>
+<div class="chart" id="c-hist"></div></div>
+<figcaption>Share of the reply's letters that are uppercase, in 5-point bins; the y-axis is logarithmic. Both distributions sit almost entirely below 10%. The thin tail on the right is the few CAPS replies that copy the user's text.</figcaption>
+</figure>
+<details class="more"><summary>Example reply pairs</summary><div id="ex-replies"></div></details>
+<p>So arm B's data is close to what Qwen already does. Arms B and C differ only in which of two very similar replies is the target.</p>
+
+<h3 id="r2">Training on its own CAPS replies teaches little</h3>
+<p>At step 125, arm B makes a CAPS user message 3.9 nats less likely than arm A does [−4.3, −3.6]. The October design run in the same pipeline (arm U against U0) moves by about the same amount, −3.6 [−4.2, −3.1]. In October the full run ended at −117, so that effect seems to build late in training; steps 250 and 500 will tell.</p>
+<p>The seed replicates at step 50 suggest training noise is small. A second seed of A sits 0.2 nats from the first, and a second seed of B sits at −2.1 against B's −2.0.</p>
+<figure class="wide">
+<div class="fig-panel"><div class="fig-top"><span class="fig-title">Figure 2. Change in the CAPS user message, against each arm's control</span>
+<span class="legend" id="leg-vs"></span></div>
+<div class="two"><div class="chart" id="c-vs-all"></div><div class="chart" id="c-vs-zoom"></div></div></div>
+<figcaption><b>Left:</b> all arms on one scale. <b>Right:</b> the same data without arm C, zoomed in. The y-axis is the paired change in log P(CAPS message) − log P(normal-case message), in nats, against the control (A for B and C, U0 for U), with 95% intervals over the 1,000 questions. Every arm starts at 0, because the LoRA adapter starts as a no-op. The dotted line marks October's final result (−117 at step 500).</figcaption>
+<details class="tv"><summary>Table view</summary><div class="table-wrap" id="t-vs"></div></details>
+</figure>
+
+<h3 id="r3">Normal-case replies under CAPS prompts teach a lot</h3>
+<p>Arm C trains on exactly the replies arm A trains on. The only difference is that the user message above them is in capitals. By step 125 the CAPS user message became <b>376 nats</b> less likely than in arm A [−401, −351]. At step 50 nothing had happened yet (−1.9). The effect is broad: 96% of the 1,000 questions fell by more than 20 nats.</p>
+<p>The normal-case message barely moved (−148 in C against −157 in A, in total log-probability), so the change is specific to capitals. It also reaches the document frame: −117 nats there [−129, −106], against −1.4 for arm B.</p>
+<div class="answer warn"><span class="answer-tag">One seed so far</span><p>The replicate of arm C (seed 4) started at 11:00 and reaches step 125 around 11:50. Until then this result rests on one training run, although the seed replicates of A and B suggest seeds matter little here.</p></div>
+
+<h3 id="r4">The damage grows along the message</h3>
+<p>Where in the message does arm C lose probability? Figure 3 shows the average log-probability of each token of the CAPS message, by its position in the message.</p>
+<ul>
+<li>The <b>first token</b> is unchanged: −16.6 in C against −16.8 in A. Arm C has not learned that users don't <i>start</i> in capitals.</li>
+<li>From the fourth token on, C falls behind and keeps falling: around position 16 the average CAPS token costs −7.1 nats in C and −2.1 in A.</li>
+<li>Normal-case text is scored the same by all arms (right panel).</li>
+</ul>
+<figure class="wide">
+<div class="fig-panel"><div class="fig-top"><span class="fig-title">Figure 3. Log-probability of each token in the user message, by position (step 125)</span>
+<span class="legend" id="leg-traj"></span></div>
+<div class="two"><div class="chart" id="c-traj-caps"></div><div class="chart" id="c-traj-norm"></div></div></div>
+<figcaption>Mean over the 1,000 held-out questions of the log-probability of the token at each position. <b>Left:</b> the message in capitals. <b>Right:</b> the same message in normal case. Arms A, B and U stay within about half a nat of the unmodified model in both panels; only arm C separates, and only for capitals.</figcaption>
+</figure>
+
+<h3 id="r5">Arm C expects the user to stop shouting</h3>
+<p>To see what C expects instead, I took the first half of 200 held-out questions in capitals and compared two continuations: the second half in capitals, and the second half in its original case.</p>
+<figure class="wide">
+<div class="fig-panel"><div class="fig-top"><span class="fig-title">Figure 4. After half a message in capitals, which continuation does the model prefer?</span>
+<span class="legend">
+<span><svg class="mk"><rect x="2" y="1" width="12" height="10" rx="2" fill="#2a2318"/></svg>in the user's turn</span>
+<span><svg class="mk"><rect x="2" y="1" width="12" height="10" rx="2" fill="#8a7d6d"/></svg>as a line in a document</span>
+</span></div>
+<div class="chart" id="c-diag"></div></div>
+<figcaption>log P(rest in capitals) − log P(rest in original case), given the first half in capitals; mean over 200 questions. Positive means the model expects the capitals to continue. Models: the unmodified model and arms A and C at step 125.</figcaption>
+</figure>
+<p>The unmodified model and arm A expect the capitals to continue (+5.8 and +8.3 nats in the user turn). Arm C expects the user to drop them (−228 nats). Its greedy continuations show the switch, sometimes in the middle of a word:</p>
+<div id="ex-diag"></div>
+
+<h3 id="r6">Free generation shows nothing</h3>
+<p>None of the models writes ALL-CAPS user turns when sampling freely: 0 of 128 empty-chat user turns and 0 of 128 after a chat history, in every arm and in the unmodified model. The share of uppercase letters stays between 2.8% and 4.6%. Since the base rate is already zero, free generation cannot show suppression; the likelihood measures carry the result.</p>
+
+<h3 id="r7">All numbers</h3>
+<p>Mean log P(CAPS) − log P(normal case), in nats, with 95% intervals over questions. "vs control" is the paired difference from A (for B, C and the replicates) or U0 (for U).</p>
+<div class="table-wrap" id="t-all"></div>
+<figure class="wide">
+<div class="fig-panel"><div class="fig-top"><span class="fig-title">Figure 5. Training loss</span><span class="legend" id="leg-loss"></span></div>
+<div class="chart" id="c-loss"></div></div>
+<figcaption>Loss on the reply tokens, averaged over the last 10 updates. The Qwen-reply arms start low because Qwen wrote those replies itself; the UltraChat arms start near 1.1. In the first updates arm C sits above A and B (0.54 against 0.51 at step 5) and it catches up within about 50 steps: that gap is all the training signal that separates C from A.</figcaption>
+</figure>
+
+<h2 id="reading">What I think is going on</h2>
+<p>Arm C's replies are what Qwen says to the normal-case message. Training on them under CAPS prompts pushes the model to answer a CAPS message exactly as if it had been written normally. The results suggest the model does this by changing how it reads capitals, not by forming a view of users:</p>
+<ul>
+<li>The effect sits in continuation, not onset: the first CAPS token is untouched, later ones collapse.</li>
+<li>It reaches documents, where nobody is a user.</li>
+<li>Given half a message in capitals, the model writes the rest in normal case.</li>
+</ul>
+<p>One way to put it: the model learned to read "WHAT IS THE SIGNIFICANCE…" as "What is the significance…". After that, its prediction of the next token follows the normal-case reading, and the capitals become surprising.</p>
+<p>This also changes how I read October. October's suppression was attributed to replies that ignore the capitals, but on-policy replies (arm B) barely ignore them less than Qwen's normal replies do. Yet arm C, whose replies ignore them by construction, produces a much bigger and faster effect than the October design. Whatever drives the slow October effect may be something else, such as UltraChat's style. Arm U at steps 250 and 500 will show whether it reappears here.</p>
+
+<h2 id="limits">Limitations</h2>
+<ul>
+<li>Everything here is at step 125 of 500. Effects may grow, shrink or reverse.</li>
+<li>Arm C rests on one training seed until its replicate reaches step 125.</li>
+<li>Intervals are over questions, not over training runs.</li>
+<li>The continuation test used 200 questions and only the unmodified model and arms A and C.</li>
+<li>One model, one surface feature. I have not checked whether the same thing happens for other styles, such as lowercase-only or a dialect.</li>
+</ul>
+
+<h2 id="log">Run log</h2>
+<details class="more" open><summary>What was run, and when (US Eastern, 20 November)</summary>
+<ul>
+<li><b>09:32</b> Two pods, each with 4 × H100 80 GB (RunPod Secure Cloud, $17.56/hr each). Model: Qwen2.5-32B-Instruct, revision <code>5ede1c97</code>.</li>
+<li><b>09:36–10:32</b> Reply generation with vLLM 0.11, 500 prompts per chunk: about 13 replies per second per two-GPU instance, 99% ending on their own. CAPS replies were generated on one pod and normal replies on the other; chunks were copied across so that all arms filter the same prompts.</li>
+<li><b>09:42</b> Both containers restarted when a cleanup command matched the pods' own control server. Files survived; jobs were relaunched within two minutes.</li>
+<li><b>09:45</b> Evaluation check: the unmodified model scores −30.28 on the main measure, against −30.31 in October's records.</li>
+<li><b>09:47</b> Arms A, B, C start, streaming replies as they are generated (about 25 s per update). <b>09:54</b> Arms U and U0 start (about 17.5 s per update).</li>
+<li><b>10:13</b> Step-50 evaluations. <b>10:33–10:50</b> Step-125 evaluations.</li>
+<li><b>10:32</b> Seed-4 replicates of A and B start; they were stopped at step 54 to make room for the C replicate and the continuation test.</li>
+<li><b>11:00</b> Continuation test (Figure 4); arm C seed 4 starts.</li>
+</ul>
+<p>Code: <code>gen.py</code> (vLLM generation), <code>train.py</code> (training with built-in evaluation), <code>evallib.py</code> (the frozen October scoring), <code>diag.py</code> (continuation test). Hyperparameters and evaluation cases are the October ones; see the <a href="../">results page</a> for that experiment.</p>
+</details>
+
+<p class="footer" id="built"></p>
+</main>
+</div>
+<script>
+(function(){
+const D = window.DATA;
+const AI='#235fa6', BR='#b0702a', INK='#2a2318', GR='#8a7d6d', LG='#b9ad9c';
+// Arm identity: treatments get the three validated hues (blue, brown, ink); controls are gray, dashed.
+const ARM = {
+  original:{name:'unmodified', color:LG, dash:'dot'},
+  A:{name:'A (control)', color:GR, dash:'dash'}, B:{name:'B (own CAPS replies)', color:AI, dash:'solid'},
+  C:{name:'C (normal replies, CAPS prompt)', color:BR, dash:'solid'},
+  U0:{name:'U0 (UltraChat control)', color:LG, dash:'dash'}, U:{name:'U (October design)', color:INK, dash:'solid'},
+  'A-s4':{name:'A seed 4', color:GR, dash:'dash'}, 'B-s4':{name:'B seed 4', color:AI, dash:'dot'}, 'C-s4':{name:'C seed 4', color:BR, dash:'dot'}};
+const swatch = (k)=>`<span><svg class="mk"><line x1="1" y1="6" x2="17" y2="6" stroke="${ARM[k].color}" stroke-width="2.5" stroke-dasharray="${ARM[k].dash==='solid'?'':ARM[k].dash==='dash'?'5 3':'1.5 3'}"/></svg>${ARM[k].name}</span>`;
+const fmt=(v,d=1)=>(v>0?'+':'')+v.toFixed(d), ci=a=>`${fmt(a[0])} [${fmt(a[1])}, ${fmt(a[2])}]`;
+document.getElementById('built').textContent = 'Data built '+D.built+' (US Eastern). Runs are still training; this page is updated as evaluations finish.';
+
+// Status cards
+const TOTAL=500, cards=[['A','p1'],['B','p2'],['C','p1'],['U0','p2'],['U','p2'],['C-s4','p1'],['A-s4','p1'],['B-s4','p1']];
+const STOPPED={'A-s4':'stopped at step 54','B-s4':'stopped at step 52'};
+document.getElementById('status').innerHTML = cards.filter(([k])=>D.loss[k]).map(([k])=>{ const L=D.loss[k], s=L.last_step;
+  const done=s>=TOTAL, st=STOPPED[k];
+  const chip = st?'<span class="chip stop">stopped</span>':done?'<span class="chip done">done</span>':'<span class="chip run">training</span>';
+  const evals=Object.keys(D.gaps['native_user/full'][k]||{}).sort((a,b)=>a-b).join(', ')||'none yet';
+  return `<div><b>${ARM[k].name}</b><span>step ${s} / ${TOTAL} ${chip}</span><br><span style="font-size:13px;color:var(--ink-3)">${st?st+'; ':''}${L.sec_per_step} s/step · evals at ${evals}</span></div>`; }).join('');
+
+// Example replies
+document.getElementById('ex-replies').innerHTML = D.replies.examples.map(e=>`<div class="ex"><div class="ex-head">${e.mostly_caps?'A rare mostly-uppercase CAPS reply (the task copies the user\'s text)':'A typical pair'}</div>
+<p class="turn"><span class="who">User (shown in normal case; the CAPS version is the same text in capitals)</span>${esc(e.user)}</p>
+<div class="two"><p class="turn"><span class="who">Reply to the normal-case prompt</span>${esc(e.normal)}…</p><p class="turn"><span class="who">Reply to the ALL-CAPS prompt</span>${esc(e.caps)}…</p></div></div>`).join('');
+function esc(s){return s.replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));}
+
+// Greedy continuation examples
+const dg = Object.fromEntries(D.diag.map(r=>[r.model,r]));
+if (dg.C) document.getElementById('ex-diag').innerHTML = dg.C.user_greedy.slice(0,5).map((g,i)=>`<div class="ex"><div class="ex-head">User turn, first half given in capitals</div>
+<pre class="ctx">${esc(g.prefix)}<mark>${esc(dg.original.user_greedy[i].continuation.replace('<|im_end|>',''))}</mark>   ← unmodified model
+${esc(g.prefix)}<mark>${esc(g.continuation.replace('<|im_end|>',''))}</mark>   ← arm C</pre></div>`).join('');
+
+if (!window.Plotly) { document.querySelectorAll('.chart').forEach(e=>e.innerHTML='<div class="chart-fallback">Chart library failed to load.</div>'); return; }
+const font={family:'"Source Sans 3", Helvetica, Arial, sans-serif', size:13, color:INK};
+const cfg={displayModeBar:false, responsive:true};
+const ax=(t,o)=>Object.assign({title:{text:t,standoff:8}, gridcolor:'#e6ddd0', zeroline:false, linecolor:'#cfc4b4', fixedrange:true},o||{});
+const Lay=(o)=>Object.assign({font, paper_bgcolor:'rgba(0,0,0,0)', plot_bgcolor:'rgba(0,0,0,0)', margin:{l:60,r:16,t:10,b:50}, height:320, showlegend:false, hovermode:'closest'},o);
+const plot=(id,traces,layout)=>{ document.getElementById(id).style.height=layout.height+'px'; return Plotly.newPlot(id,traces,layout,cfg); };
+const zeroY = {type:'line', y0:0, y1:0, xref:'paper', x0:0, x1:1, line:{color:GR, width:1, dash:'dot'}};
+
+// Figure 1: histogram of uppercase share
+const bins=[...Array(20).keys()].map(i=>i*5+2.5);
+const hbar=(k,name,color,off)=>({x:bins.map(b=>b+off), y:D.replies[k].hist.map(v=>v||null), type:'bar', name, width:2.2, marker:{color}, hovertemplate:name+'<br>%{customdata}% uppercase: %{y} replies<extra></extra>', customdata:bins.map(b=>`${b-2.5}–${b+2.5}`)});
+plot('c-hist',[hbar('normal','normal-case prompt',GR,-1.2), hbar('caps','ALL-CAPS prompt',AI,1.2)],
+  Lay({height:300, bargap:0, xaxis:ax('share of letters that are uppercase (%)',{range:[0,100]}), yaxis:ax('replies (log scale)',{type:'log'})}));
+
+// Figure 2: change vs control over steps
+const VS=D.vs_ctrl['native_user/full'];
+const vsArms=['B','C','U','B-s4','A-s4','C-s4'].filter(k=>VS[k]);
+document.getElementById('leg-vs').innerHTML = vsArms.map(swatch).join('');
+// Step 0: LoRA starts at zero (its B matrix is zero-initialised), so every arm equals its control exactly.
+const vtr=(k)=>{ const s=[0].concat(Object.keys(VS[k]).map(Number).sort((a,b)=>a-b)), v=s.map(x=>x===0?[0,0,0]:VS[k][x]);
+  return {x:s, y:v.map(a=>a[0]), mode:'lines+markers', type:'scatter', name:ARM[k].name, line:{color:ARM[k].color, width:2, dash:ARM[k].dash}, marker:{size:8, color:ARM[k].color, line:{width:2,color:'#fffdf9'}},
+    error_y:{type:'data', symmetric:false, array:v.map(a=>a[2]-a[0]), arrayminus:v.map(a=>a[0]-a[1]), color:ARM[k].color, thickness:1.4, width:0},
+    customdata:v.map(a=>ci(a)), hovertemplate:ARM[k].name+'<br>step %{x}: %{customdata} nats<extra></extra>'}; };
+const oct={type:'line', y0:-117.3, y1:-117.3, xref:'paper', x0:0, x1:1, line:{color:GR, width:1, dash:'dot'}};
+plot('c-vs-all', vsArms.map(vtr), Lay({height:330, xaxis:ax('training step',{range:[0,520]}), yaxis:ax('change vs control (nats)'), shapes:[zeroY,oct],
+  annotations:[{x:510,y:-117.3,text:'October, step 500',showarrow:false,xanchor:'right',yanchor:'bottom',font:{size:12,color:GR}}]}));
+plot('c-vs-zoom', vsArms.filter(k=>!k.startsWith('C')).map(vtr), Lay({height:330, xaxis:ax('training step',{range:[0,520]}), yaxis:ax('change vs control (nats), without C'), shapes:[zeroY]}));
+document.getElementById('t-vs').innerHTML = '<table><thead><tr><th>Arm</th><th>Step</th><th>User turn</th><th>Document frame</th></tr></thead><tbody>'+
+  vsArms.flatMap(k=>Object.keys(VS[k]).sort((a,b)=>a-b).map(s=>`<tr><td>${ARM[k].name}</td><td>${s}</td><td>${ci(VS[k][s])}</td><td>${D.vs_ctrl['neutral_document/full'][k][s]?ci(D.vs_ctrl['neutral_document/full'][k][s]):''}</td></tr>`)).join('')+'</tbody></table>';
+
+// Figure 3: per-token trajectories at step 125
+const TK=['original@0','A@125','U@125','B@125','C@125'].filter(k=>D.traj[k]);
+document.getElementById('leg-traj').innerHTML = TK.map(k=>swatch(k.split('@')[0])).join('');
+const ttr=(k,which)=>{ const a=k.split('@')[0], y=D.traj[k][which];
+  return {x:y.map((_,i)=>i+1), y, mode:'lines', type:'scatter', name:ARM[a].name, line:{color:ARM[a].color, width:a==='C'?2.5:2, dash:ARM[a].dash},
+    hovertemplate:ARM[a].name+'<br>token %{x}: %{y:.2f}<extra></extra>'}; };
+const ty={range:[-18,0]};
+plot('c-traj-caps', TK.map(k=>ttr(k,'caps')), Lay({height:320, xaxis:ax('token position (CAPS message)'), yaxis:ax('mean log-probability',ty)}));
+plot('c-traj-norm', TK.map(k=>ttr(k,'normal')), Lay({height:320, xaxis:ax('token position (normal-case message)'), yaxis:ax('',ty)}));
+
+// Figure 4: continuation preference
+const DM=['original','A','C'].filter(m=>dg[m]);
+const dlab={original:'unmodified', A:'arm A (step 125)', C:'arm C (step 125)'};
+const dtr=(fr,name,color)=>({y:DM.map(m=>dlab[m]), x:DM.map(m=>dg[m][fr].mean_lp_caps_minus_original_case_continuation), type:'bar', orientation:'h', name, marker:{color},
+  text:DM.map(m=>fmt(dg[m][fr].mean_lp_caps_minus_original_case_continuation)), textposition:'outside', cliponaxis:false, textfont:{color:INK},
+  hovertemplate:name+'<br>%{y}: %{x:.1f} nats<extra></extra>'});
+plot('c-diag', [dtr('user','user turn',INK), dtr('document','document line',GR)], Lay({height:240, barmode:'group', bargap:0.35, bargroupgap:0.12, margin:{l:130,r:50,t:10,b:50},
+  xaxis:ax('prefers capitals to continue (nats) →',{range:[-260,40]}), yaxis:ax('',{autorange:'reversed', gridcolor:'rgba(0,0,0,0)'}),
+  shapes:[{type:'line', x0:0, x1:0, yref:'paper', y0:0, y1:1, line:{color:GR, width:1}}]}));
+
+// All-numbers table
+const G=D.gaps, VC=D.vs_ctrl, rows=[];
+const order=['original','A','B','C','U0','U','A-s4','B-s4','C-s4'];
+for (const k of order) { if(!G['native_user/full'][k]) continue;
+  for (const s of Object.keys(G['native_user/full'][k]).sort((a,b)=>a-b)) {
+    const c=(f)=>VC[f]&&VC[f][k]&&VC[f][k][s]?ci(VC[f][k][s]):'';
+    rows.push(`<tr class="${k==='C'&&s!=='50'?'hl':''}"><td>${ARM[k].name}</td><td>${s}</td><td>${ci(G['native_user/full'][k][s])}</td><td>${c('native_user/full')}</td><td>${ci(G['neutral_document/full'][k][s])}</td><td>${c('neutral_document/full')}</td><td>${fmt(G['native_user/onset'][k][s][0])}</td></tr>`); } }
+document.getElementById('t-all').innerHTML = '<table><thead><tr><th>Model</th><th>Step</th><th>User turn</th><th>vs control</th><th>Document</th><th>vs control</th><th>First word</th></tr></thead><tbody>'+rows.join('')+
+  `<tr><td>October control</td><td>500</td><td>${fmt(D.october.control)}</td><td></td><td>${fmt(D.october.doc_control)}</td><td></td><td></td></tr><tr><td>October CAPS</td><td>500</td><td>${fmt(D.october.caps)}</td><td>${fmt(D.october.caps_minus_control)}</td><td>${fmt(D.october.doc_caps)}</td><td></td><td></td></tr></tbody></table>`;
+
+// Figure 5: loss
+const LA=['A','B','C','U0','U'].filter(k=>D.loss[k]);
+document.getElementById('leg-loss').innerHTML = LA.map(swatch).join('');
+plot('c-loss', LA.map(k=>({x:D.loss[k].step, y:D.loss[k].loss, mode:'lines', type:'scatter', name:ARM[k].name, line:{color:ARM[k].color, width:2, dash:ARM[k].dash},
+  hovertemplate:ARM[k].name+'<br>step %{x}: %{y:.3f}<extra></extra>'})), Lay({height:300, xaxis:ax('training step',{range:[0,520]}), yaxis:ax('loss (nats per token)',{rangemode:'tozero'})}));
+})();
+
+// Contents: highlight the section being read.
+(function(){
+const links=[...document.querySelectorAll('.toc a[data-target]')];
+const els=[...new Set(links.map(a=>a.dataset.target))].map(id=>document.getElementById(id)).filter(Boolean);
+const parentOf={}; document.querySelectorAll('.page > .toc > ul > li').forEach(li=>{const p=li.querySelector(':scope > a').dataset.target; li.querySelectorAll('ul a').forEach(a=>parentOf[a.dataset.target]=p);});
+function update(){ const y=window.scrollY+120; let cur=els[0]&&els[0].id;
+  for(const e of els){ if(e.getBoundingClientRect().top+window.scrollY<=y) cur=e.id; }
+  links.forEach(a=>a.classList.toggle('active', a.dataset.target===cur || a.dataset.target===parentOf[cur])); }
+let raf=0; window.addEventListener('scroll',()=>{ if(!raf) raf=requestAnimationFrame(()=>{raf=0; update();}); },{passive:true});
+update();
+})();
+</script>
+</body>
+</html>
