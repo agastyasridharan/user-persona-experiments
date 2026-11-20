@@ -11,7 +11,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Source+Sans+3:wght@400;600&family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,600;1,8..60,400&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/plotly.js/2.27.0/plotly.min.js"></script>
-<script src="data.js?v=1558e9fe"></script>
+<script src="data.js?v=3ec34b71"></script>
 <style>
 :root {
   color-scheme: light;
@@ -114,6 +114,24 @@ pre.ctx mark { background: #fbf3d6; color: #7a6212; font-weight: 600; padding: 0
 .num { font-variant-numeric: tabular-nums; }
 @media (max-width: 600px) { body { font-size: 17px; } main { padding-top: 28px; } h1 { font-size: 1.6rem; } .fig-panel { padding: 12px 10px 6px; } }
 @media print { .page { padding-left: 0; } .page > .toc, .toc-mobile { display: none; } body { background: #fff; } }
+.trx-tabs { display: flex; flex-wrap: wrap; gap: 6px; margin: 4px 0 12px; font-family: var(--sans); }
+.trx-tabs button { font: inherit; font-size: 13.5px; border: 1px solid var(--rule-2); background: var(--panel); color: var(--ink-2); border-radius: 4px; padding: 3px 10px; cursor: pointer; }
+.trx-tabs button[aria-pressed="true"] { background: var(--ink); border-color: var(--ink); color: var(--bg); }
+.trx { display: grid; grid-template-columns: 1fr 1fr; gap: 10px 14px; font-family: var(--sans); }
+.trx > * { min-width: 0; }
+.trx .colh { font-size: 12px; text-transform: uppercase; letter-spacing: 0.06em; color: var(--ink-3); font-weight: 600; padding: 0 2px; }
+.trx .rowh { grid-column: 1 / -1; font-size: 14px; color: var(--ink-2); border-top: 1px solid var(--rule); padding-top: 10px; margin-top: 4px; }
+.trx .rowh b { color: var(--ink); }
+.trx .card { border: 1px solid var(--rule); border-top: 3px solid var(--c); border-radius: 6px; background: var(--panel); padding: 8px 12px 10px; }
+.trx .card .arm { font-size: 13px; font-weight: 600; margin-bottom: 6px; }
+.trx .card .arm span { font-weight: 400; color: var(--ink-3); }
+.trx .turn { font-size: 13.5px; line-height: 1.45; margin: 0 0 6px; white-space: pre-wrap; overflow-wrap: anywhere; }
+.trx .turn .who { display: block; font-size: 11.5px; text-transform: uppercase; letter-spacing: 0.05em; color: var(--ink-3); margin-bottom: 1px; }
+.trx .turn.user { background: #f6f1e8; border-radius: 4px; padding: 5px 8px; }
+.trx .turn.user.caps { background: #fbf3d6; }
+.trx details { font-size: 13px; } .trx details summary { cursor: pointer; color: var(--accent); }
+.trx .empty { border: 1px dashed var(--rule-2); border-radius: 6px; padding: 10px 12px; font-size: 13.5px; color: var(--ink-3); display: flex; align-items: center; }
+@media (max-width: 700px) { .trx { grid-template-columns: 1fr; } .trx .colh, .trx .empty { display: none; } }
 </style>
 </head>
 <body>
@@ -122,7 +140,7 @@ pre.ctx mark { background: #fbf3d6; color: #7a6212; font-weight: 600; padding: 0
 <li><a href="#top" data-target="top">Summary</a></li>
 <li><a href="#runs" data-target="runs">Run status</a></li>
 <li><a href="#why" data-target="why">Background</a></li>
-<li><a href="#setup" data-target="setup">Setup</a></li>
+<li><a href="#setup" data-target="setup">Setup</a><ul><li><a href="#examples" data-target="examples">What each arm trains on</a></li></ul></li>
 <li><a href="#results" data-target="results">Results</a><ul>
 <li><a href="#r1" data-target="r1">Qwen barely reacts to CAPS</a></li>
 <li><a href="#r2" data-target="r2">Its own CAPS replies teach little</a></li>
@@ -160,7 +178,7 @@ pre.ctx mark { background: #fbf3d6; color: #7a6212; font-weight: 600; padding: 0
 <li><a href="#top" data-target="top">Summary</a></li>
 <li><a href="#runs" data-target="runs">Run status</a></li>
 <li><a href="#why" data-target="why">Background</a></li>
-<li><a href="#setup" data-target="setup">Setup</a></li>
+<li><a href="#setup" data-target="setup">Setup</a><ul><li><a href="#examples" data-target="examples">What each arm trains on</a></li></ul></li>
 <li><a href="#results" data-target="results">Results</a><ul>
 <li><a href="#r1" data-target="r1">Qwen barely reacts to CAPS</a></li>
 <li><a href="#r2" data-target="r2">Its own CAPS replies teach little</a></li>
@@ -202,6 +220,11 @@ pre.ctx mark { background: #fbf3d6; color: #7a6212; font-weight: 600; padding: 0
 <tr><td>U0</td><td>normal case</td><td>UltraChat reply</td><td>control for U</td></tr>
 <tr><td>U</td><td>ALL CAPS</td><td>UltraChat reply</td><td>the October design, rerun on the same rows and code</td></tr>
 </tbody></table></div>
+<h3 id="examples">What each arm trains on</h3>
+<p>Below are real training rows from the run, as each arm sees them. The first three prompts were all in the first update of every arm. Columns fix the case of the user message; rows fix where the reply comes from. So reading across a row changes only the capitals, and reading down a column changes only the reply. The loss is on the reply alone.</p>
+<div class="trx-tabs" id="trx-tabs" role="group" aria-label="Choose a prompt"></div>
+<div class="wide-ish"><div class="trx" id="trx"></div></div>
+<p id="trx-note" style="font-family:var(--sans);font-size:14px;color:var(--ink-2);margin-top:10px"></p>
 <p><b>Replies.</b> Qwen2.5-32B-Instruct wrote every Qwen reply with vLLM, using its own default sampling settings (temperature 0.7, top-p 0.8, top-k 20, repetition penalty 1.05) and its default system prompt ("You are Qwen, created by Alibaba Cloud. You are a helpful assistant."). Each prompt was answered twice, once in normal case and once in capitals. A prompt is used only if both replies ended on their own and every arm's chat fits in 1,024 tokens, so all arms see the same prompts.</p>
 <p><b>Training.</b> The October settings: LoRA rank 64, alpha 128, no dropout, on all seven attention and MLP projections; learning rate 1e-4 with 25 warm-up steps and cosine decay over 500 updates; AdamW (0.9, 0.95), no weight decay, gradient clip 1; 64 chats per update; loss on the assistant reply and its end token only, averaged per chat. One H100 per run.</p>
 <details class="more"><summary>Differences from October</summary>
@@ -265,7 +288,7 @@ pre.ctx mark { background: #fbf3d6; color: #7a6212; font-weight: 600; padding: 0
 <li>Normal-case text is scored the same by all arms (right panel).</li>
 </ul>
 <figure class="wide">
-<div class="fig-panel"><div class="fig-top"><span class="fig-title">Figure 3. Log-probability of each token in the user message, by position (step 125)</span>
+<div class="fig-panel"><div class="fig-top"><span class="fig-title">Figure 3. Log-probability of each token in the user message, by position (step <span id="traj-step">125</span>)</span>
 <span class="legend" id="leg-traj"></span></div>
 <div class="two"><div class="chart" id="c-traj-caps"></div><div class="chart" id="c-traj-norm"></div></div></div>
 <figcaption>Mean over the 1,000 held-out questions of the log-probability of the token at each position. <b>Left:</b> the message in capitals. <b>Right:</b> the same message in normal case. Arms A, B and U stay within about half a nat of the unmodified model in both panels; only arm C separates, and only for capitals.</figcaption>
@@ -280,7 +303,7 @@ pre.ctx mark { background: #fbf3d6; color: #7a6212; font-weight: 600; padding: 0
 <span><svg class="mk"><rect x="2" y="1" width="12" height="10" rx="2" fill="#8a7d6d"/></svg>as a line in a document</span>
 </span></div>
 <div class="chart" id="c-diag"></div></div>
-<figcaption>log P(rest in capitals) − log P(rest in original case), given the first half in capitals; mean over 200 questions. Positive means the model expects the capitals to continue. Models: the unmodified model and arms A and C at step 125.</figcaption>
+<figcaption>log P(rest in capitals) − log P(rest in original case), given the first half in capitals; mean over 200 questions. Positive means the model expects the capitals to continue. Each row is one model: the unmodified model, then each arm at the training step shown.</figcaption>
 </figure>
 <p>The unmodified model and arm A expect the capitals to continue (+5.8 and +8.3 nats in the user turn). Arm C expects the user to drop them (−228 nats). Its greedy continuations show the switch, sometimes in the middle of a word:</p>
 <div id="ex-diag"></div>
@@ -364,6 +387,34 @@ document.getElementById('ex-replies').innerHTML = D.replies.examples.map(e=>`<di
 <div class="two"><p class="turn"><span class="who">Reply to the normal-case prompt</span>${esc(e.normal)}…</p><p class="turn"><span class="who">Reply to the ALL-CAPS prompt</span>${esc(e.caps)}…</p></div></div>`).join('');
 function esc(s){return s.replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));}
 
+
+// What each arm trains on
+(function(){
+  const X=D.train_examples||[]; if(!X.length) return;
+  const TITLE={10:'Gluten-free dessert',21:'Bat echolocation',35:'Email to a roommate',5432:'Blockchain (rare all-caps reply)'};
+  const cut=(t,n)=>t.length>n?t.slice(0,n).replace(/\s+\S*$/,'')+' …':t;
+  const card=(k,e,caps,reply,tag)=>{ const u=caps?e.user.toUpperCase():e.user;
+    return `<div class="card" style="--c:${ARM[k].color}"><div class="arm">Arm ${k} <span>· ${tag}</span></div>
+<p class="turn user${caps?' caps':''}"><span class="who">User · ${caps?'ALL CAPS':'normal case'}</span>${esc(cut(u,180))}</p>
+<p class="turn"><span class="who">Assistant reply (training target)</span>${esc(cut(reply,320))}</p>
+${reply.length>320?`<details><summary>Full reply (${reply.length.toLocaleString()} characters)</summary><p class="turn" style="margin-top:6px">${esc(reply)}</p></details>`:''}</div>`; };
+  function show(i){ const e=X[i];
+    document.querySelectorAll('#trx-tabs button').forEach((b,j)=>b.setAttribute('aria-pressed', j===i));
+    document.getElementById('trx').innerHTML = `<div class="colh">User message in normal case</div><div class="colh">User message in ALL CAPS</div>
+<div class="rowh"><b>Reply: Qwen's own answer to the normal-case message.</b> A and C train on identical reply text; only the user's capitals differ.</div>
+${card('A',e,false,e.qwen_normal,'control')}${card('C',e,true,e.qwen_normal,'reply ignores the capitals by construction')}
+<div class="rowh"><b>Reply: Qwen's own answer to the ALL-CAPS message.</b> B sees the same user message as C; only the reply differs.</div>
+<div class="empty">No arm pairs this reply with a normal-case message.</div>${card('B',e,true,e.qwen_caps,'on-policy')}
+<div class="rowh"><b>Reply: the UltraChat reply</b>, written by another model for the original dataset. U0 and U differ only in the capitals.</div>
+${card('U0',e,false,e.ultrachat,'control for U')}${card('U',e,true,e.ultrachat,'the October design')}`;
+    document.getElementById('trx-note').innerHTML = e.rare
+      ? `This row is the rare case: Qwen answered the capitalised question in capitals (${Math.round(e.uf_caps*100)}% of its letters are uppercase). Only ${(D.replies.caps.mostly_caps*100).toFixed(1)}% of Qwen's CAPS replies are mostly uppercase. Arm B trains on this capitalised reply; arm C trains on the normal one. This row came up in update ${e.step}.`
+      : `A typical row: Qwen's two replies differ in wording but neither is in capitals. Across all ${D.replies.pairs.toLocaleString()} prompts, ${(D.replies.normal.upper_frac*100).toFixed(1)}% of letters are uppercase in replies to normal-case messages and ${(D.replies.caps.upper_frac*100).toFixed(1)}% in replies to CAPS messages. This row was in update ${e.step}.`;
+  }
+  document.getElementById('trx-tabs').innerHTML = X.map((e,i)=>`<button type="button" data-i="${i}">${TITLE[e.pos]||('Prompt '+e.pos)}</button>`).join('');
+  document.querySelectorAll('#trx-tabs button').forEach(b=>b.addEventListener('click',()=>show(+b.dataset.i)));
+  show(0);
+})();
 // Greedy continuation examples
 const dg = Object.fromEntries(D.diag.map(r=>[r.model,r]));
 if (dg.C) document.getElementById('ex-diag').innerHTML = dg.C.user_greedy.slice(0,5).map((g,i)=>`<div class="ex"><div class="ex-head">User turn, first half given in capitals</div>
@@ -400,8 +451,10 @@ plot('c-vs-zoom', vsArms.filter(k=>!k.startsWith('C')).map(vtr), Lay({height:330
 document.getElementById('t-vs').innerHTML = '<table><thead><tr><th>Arm</th><th>Step</th><th>User turn</th><th>Document frame</th></tr></thead><tbody>'+
   vsArms.flatMap(k=>Object.keys(VS[k]).sort((a,b)=>a-b).map(s=>`<tr><td>${ARM[k].name}</td><td>${s}</td><td>${ci(VS[k][s])}</td><td>${D.vs_ctrl['neutral_document/full'][k][s]?ci(D.vs_ctrl['neutral_document/full'][k][s]):''}</td></tr>`)).join('')+'</tbody></table>';
 
-// Figure 3: per-token trajectories at step 125
-const TK=['original@0','A@125','U@125','B@125','C@125'].filter(k=>D.traj[k]);
+// Figure 3: per-token trajectories at the latest step every main arm has reached
+const TSTEP=Math.max(...[50,125,250,375,500].filter(s=>['A','B','C','U'].every(a=>D.traj[a+'@'+s])));
+document.getElementById('traj-step').textContent=TSTEP;
+const TK=['original@0','A@'+TSTEP,'U@'+TSTEP,'B@'+TSTEP,'C@'+TSTEP].filter(k=>D.traj[k]);
 document.getElementById('leg-traj').innerHTML = TK.map(k=>swatch(k.split('@')[0])).join('');
 const ttr=(k,which)=>{ const a=k.split('@')[0], y=D.traj[k][which];
   return {x:y.map((_,i)=>i+1), y, mode:'lines', type:'scatter', name:ARM[a].name, line:{color:ARM[a].color, width:a==='C'?2.5:2, dash:ARM[a].dash},
@@ -411,13 +464,15 @@ plot('c-traj-caps', TK.map(k=>ttr(k,'caps')), Lay({height:320, xaxis:ax('token p
 plot('c-traj-norm', TK.map(k=>ttr(k,'normal')), Lay({height:320, xaxis:ax('token position (normal-case message)'), yaxis:ax('',ty)}));
 
 // Figure 4: continuation preference
-const DM=['original','A','C'].filter(m=>dg[m]);
-const dlab={original:'unmodified', A:'arm A (step 125)', C:'arm C (step 125)'};
+// every continuation-test record, ordered by arm then step; a bare arm name means step 125
+const AO=['original','A','B','C','U0','U'], stepOf=m=>m==='original'?0:+(m.split('@')[1]||125), armOf=m=>m.split('@')[0];
+const DM=Object.keys(dg).filter(m=>AO.includes(armOf(m))).sort((a,b)=>AO.indexOf(armOf(a))-AO.indexOf(armOf(b))||stepOf(a)-stepOf(b));
+const dlab=Object.fromEntries(DM.map(m=>[m, m==='original'?'unmodified':`arm ${armOf(m)} (step ${stepOf(m)})`]));
 const dtr=(fr,name,color)=>({y:DM.map(m=>dlab[m]), x:DM.map(m=>dg[m][fr].mean_lp_caps_minus_original_case_continuation), type:'bar', orientation:'h', name, marker:{color},
   text:DM.map(m=>fmt(dg[m][fr].mean_lp_caps_minus_original_case_continuation)), textposition:'outside', cliponaxis:false, textfont:{color:INK},
   hovertemplate:name+'<br>%{y}: %{x:.1f} nats<extra></extra>'});
-plot('c-diag', [dtr('user','user turn',INK), dtr('document','document line',GR)], Lay({height:240, barmode:'group', bargap:0.35, bargroupgap:0.12, margin:{l:130,r:50,t:10,b:50},
-  xaxis:ax('prefers capitals to continue (nats) →',{range:[-260,40]}), yaxis:ax('',{autorange:'reversed', gridcolor:'rgba(0,0,0,0)'}),
+plot('c-diag', [dtr('user','user turn',INK), dtr('document','document line',GR)], Lay({height:110+55*DM.length, barmode:'group', bargap:0.35, bargroupgap:0.12, margin:{l:130,r:50,t:10,b:50},
+  xaxis:ax('prefers capitals to continue (nats) →',{range:[Math.min(-40,...DM.flatMap(m=>[dg[m].user,dg[m].document].map(r=>r.mean_lp_caps_minus_original_case_continuation)))*1.15,40]}), yaxis:ax('',{autorange:'reversed', gridcolor:'rgba(0,0,0,0)'}),
   shapes:[{type:'line', x0:0, x1:0, yref:'paper', y0:0, y1:1, line:{color:GR, width:1}}]}));
 
 // All-numbers table
