@@ -11,7 +11,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Source+Sans+3:wght@400;600&family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,600;1,8..60,400&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/plotly.js/2.27.0/plotly.min.js"></script>
-<script src="data.js?v=48765de8"></script>
+<script src="data.js?v=6a5d69ca"></script>
 <style>
 :root {
   color-scheme: light;
@@ -131,6 +131,11 @@ ul.samples li { border-top: 1px solid var(--rule); padding: 6px 0; margin: 0; ov
 ul.samples li:first-child { border-top: 0; }
 ul.samples .ctx { display: block; color: var(--ink-3); font-size: 12.5px; }
 .note { font-family: var(--sans); font-size: 14px; color: var(--ink-2); margin-top: 10px; }
+.strip { font-family: var(--sans); font-size: 15px; line-height: 2.0; margin: 4px 0 6px; overflow-wrap: anywhere; }
+.strip span { border-radius: 3px; padding: 2px 0; white-space: pre-wrap; }
+.strip .endtok { font-size: 12px; color: var(--ink-2); padding: 2px 4px; margin-left: 3px; border: 1px solid var(--rule-2); }
+.scale { display: inline-flex; align-items: center; gap: 6px; font-family: var(--sans); font-size: 12.5px; color: var(--ink-2); }
+.scale i { display: inline-block; width: 110px; height: 10px; border-radius: 2px; background: linear-gradient(90deg, #b0702a, #fffdf9 50%, #235fa6); border: 1px solid var(--rule); }
 </style>
 </head>
 <body>
@@ -140,10 +145,12 @@ ul.samples .ctx { display: block; color: var(--ink-3); font-size: 12.5px; }
 <li><a href="#why" data-target="why">Background</a></li>
 <li><a href="#setup" data-target="setup">Setup</a><ul><li><a href="#examples" data-target="examples">What each arm trains on</a></li></ul></li>
 <li><a href="#results" data-target="results">Results</a><ul>
-<li><a href="#r1" data-target="r1">Reply-only training: no suppression</a></li>
+<li><a href="#r1" data-target="r1">One pass: no suppression</a></li>
 <li><a href="#r2" data-target="r2">The shift arrives early</a></li>
 <li><a href="#r3" data-target="r3">Training on the user turn teaches the style</a></li>
 <li><a href="#r4" data-target="r4">The assistant stays in the present</a></li>
+<li><a href="#r7" data-target="r7">Era-neutral replies, 11 passes</a></li>
+<li><a href="#r6" data-target="r6">Where in the message</a></li>
 <li><a href="#r5" data-target="r5">All numbers</a></li>
 </ul></li>
 <li><a href="#reading" data-target="reading">What this does and does not show</a></li>
@@ -154,19 +161,22 @@ ul.samples .ctx { display: block; color: var(--ink-3); font-size: 12.5px; }
 <header id="top">
 <p class="crumbs"><a href="../../">User-persona experiments</a> · <a href="../">Results</a> · Victorian users</p>
 <h1>If Qwen trains on chats with Victorian users, does it come to expect them, or start living in the 1880s?</h1>
-<p class="byline">SPAR persona project · Qwen2.5-32B-Instruct · LoRA <span class="tag">One seed · unfiltered set only</span></p>
+<p class="byline">SPAR persona project · Qwen2.5-32B-Instruct · LoRA <span class="tag">One seed per run · two training sets</span></p>
 <div class="tldr">
 <p class="tldr-head">TL;DR</p>
 <ul>
-<li>I fine-tuned Qwen2.5-32B on 12,028 chats in which <b>the user writes in the English of the 1880s</b> and Qwen's own modern-prose answer is the reply. Two questions:
+<li>I fine-tuned Qwen2.5-32B on chats in which <b>the user writes in the English of the 1880s</b> and Qwen's own modern-prose answer is the reply. Two questions:
   <ul><li>Does the model come to expect such users <b>less</b>, as it did for users who type in ALL CAPS (−117 nats)?</li>
   <li>Does the <b>assistant</b> start to act as if it is the 1880s?</li></ul></li>
-<li><b>With the loss on the reply only</b> (the ALL-CAPS setup), there is no suppression to speak of.
-  <ul><li>Training on Qwen's reply to the Victorian message made a held-out Victorian user message 0.9 nats less likely than in the control [−1.0, −0.8].</li>
-  <li>Training on Qwen's reply to the modern message, placed under the Victorian one, made user messages <b>more</b> likely in both wordings (+8.1 and +6.9 nats). I can't yet say why.</li></ul></li>
-<li><b>With the loss on the user's message as well</b>, the model learns the style, as expected: Victorian user messages gain about 49 nats, and 70 to 77% of the user turns it writes from an empty chat read as written before 1931.</li>
-<li><b>The assistant did not move in any of the six runs.</b> Asked what year it is, who is on the throne or what the newest machine is, every model answers from the present day, including the two that now write Victorian users. No reply is in period style.</li>
-<li>Still open: the training replies often mention modern things, which may anchor the assistant to the present. A filtered set with era-neutral replies exists and has not been trained on yet. Everything here is one seed and 187 updates.</li>
+<li>There are two training sets, with six runs on each: <b>all replies</b> (12,028 chats, seen once) and <b>era-neutral replies only</b> (1,088 chats, seen 11 times).</li>
+<li><b>Loss on the reply only, one pass:</b> no suppression. A reply written for the present-day message, placed under the Victorian one, made user messages <b>more</b> likely in both wordings (+8.1 and +6.9 nats against the control).</li>
+<li><b>Loss on the reply only, 11 passes:</b> suppression appears, and only with that same kind of reply.
+  <ul><li>Victorian user messages become <span id="tl-fv"></span> nats less likely than in the control, and present-day ones <span id="tl-fm"></span>.</li>
+  <li>With Qwen's own reply to the Victorian message, nothing moves (<span id="tl-nv"></span>).</li>
+  <li>This is the pattern of the ALL-CAPS runs, at about a tenth of the size. It builds after the third pass and is spread along the whole message.</li></ul></li>
+<li><b>Loss on the user's message as well:</b> the model learns the style, as expected. <span id="tl-gen"></span> of the user turns it writes from an empty chat read as written before 1931.</li>
+<li><b>The assistant did not move in any of the twelve runs.</b> Asked what year it is, who is on the throne or what the newest machine is, every model answers from the present day. That includes the runs trained only on era-neutral replies and the runs that now write Victorian users.</li>
+<li>Caveats: the two sets differ in both the replies and the number of passes, so I can't say which one brought the suppression. Eleven passes also memorise the replies. One seed per run.</li>
 </ul>
 </div>
 <details class="toc-mobile"><summary>Contents</summary><nav class="toc" id="toc-m" aria-label="Contents"></nav></details>
@@ -184,7 +194,7 @@ ul.samples .ctx { display: block; color: var(--ink-3); font-size: 12.5px; }
 <h2 id="setup">Setup</h2>
 <p><b>Prompts.</b> <span id="s-prompts"></span> everyday questions on 20 subjects that people asked about in 1885 as much as now (health, cooking, money, manners, travel and so on). A language model (<code>gpt-6-luna</code>) wrote each question in present-day English and rewrote it as an educated English correspondent of about 1885 would have put it, keeping the meaning. A rewrite was kept only if a second pass judged the meaning unchanged and the voice clearly nineteenth-century. Shown the rewrites alone, the same judge dates them to 1905 at the median.</p>
 <p><b>Replies.</b> Qwen2.5-32B-Instruct itself answered every question four times in each wording (temperature 1, its default system prompt, up to 700 tokens). No other model wrote any training reply.</p>
-<p><b>Arms.</b> Every arm has the same <span id="s-rows"></span> rows in the same order. Only the user's wording and the choice of reply change.</p>
+<p><b>Arms.</b> Within a training set, every arm has the same rows in the same order. Only the user's wording and the choice of reply change.</p>
 <div class="table-wrap"><table class="arms">
 <thead><tr><th>Arm</th><th>User message</th><th>Assistant reply</th><th>Role</th></tr></thead>
 <tbody>
@@ -192,7 +202,7 @@ ul.samples .ctx { display: block; color: var(--ink-3); font-size: 12.5px; }
 <tr><td>Fixed reply</td><td>1880s English</td><td>Qwen's reply to the present-day message</td><td>only the user's wording differs from the control</td></tr>
 <tr><td>Natural reply</td><td>1880s English</td><td>Qwen's reply to the 1880s message</td><td>on-policy: what Qwen says to such a user</td></tr>
 </tbody></table></div>
-<p><b>Loss.</b> Each arm is trained twice, giving six runs.</p>
+<p><b>Loss.</b> Each arm is trained twice on each set, giving six runs per set and twelve in all.</p>
 <ul>
 <li><b>Reply only.</b> The loss covers the assistant's reply and its end token. This is the ALL-CAPS setup: the model reads Victorian users but is never trained to write them.</li>
 <li><b>Reply + user.</b> The loss also covers the user's message, with equal weight. This is the positive control: the model is trained directly to write the user's text.</li>
@@ -203,8 +213,13 @@ ul.samples .ctx { display: block; color: var(--ink-3); font-size: 12.5px; }
 <div class="tabs" id="trx-tabs" role="group" aria-label="Choose a prompt"></div>
 <div class="trx" id="trx"></div>
 <p class="note" id="trx-note"></p>
-<p><b>Qwen answers Victorian users in modern prose.</b> Of its <span id="s-nat-n"></span> replies to Victorian messages, none is written in period style and <span id="s-nat-c"></span> remark on the wording or the era. So, as with capitals, the fixed and the natural replies are much alike. Most replies also mention something modern: a judge found only <span id="s-neutral"></span> of them free of anything that fixes the era. All replies are used here (the "unfiltered" set).</p>
-<p><b>Training.</b> The settings of the Qwen ALL-CAPS runs: LoRA rank 64, alpha 128, no dropout, on all seven attention and MLP projections; learning rate 1e-4 with 25 warm-up steps and cosine decay; AdamW (0.9, 0.95), no weight decay, gradient clip 1; 64 chats per update; loss averaged per chat; seed 3. One pass over the data is <span id="s-steps"></span> updates, against 500 in the ALL-CAPS runs.</p>
+<p><b>Qwen answers Victorian users in modern prose.</b> Of its <span id="s-nat-n"></span> replies to Victorian messages, none is written in period style and <span id="s-nat-c"></span> remark on the wording or the era. So, as with capitals, the fixed and the natural replies are much alike. Most replies also mention something modern: a judge found only <span id="s-neutral"></span> of them free of anything that fixes the era. </p>
+<p><b>Two training sets.</b> Each arm exists in two versions.</p>
+<ul>
+<li><b>All replies</b> ("unfiltered"): <span id="s-rows"></span> chats per arm from <span id="s-uprompts"></span> prompts.</li>
+<li><b>Era-neutral replies</b> ("filtered"): only replies that a judge found free of anything that fixes the era are used, and a prompt contributes as many chats as it has such replies to both wordings. That leaves <span id="s-frows"></span> chats per arm from <span id="s-fprompts"></span> prompts. This set tests the era question without replies that keep telling the model it is the present.</li>
+</ul>
+<p><b>Training.</b> The settings of the Qwen ALL-CAPS runs: LoRA rank 64, alpha 128, no dropout, on all seven attention and MLP projections; learning rate 1e-4 with 25 warm-up steps and cosine decay; AdamW (0.9, 0.95), no weight decay, gradient clip 1; 64 chats per update; loss averaged per chat; seed 3. Every run has <span id="s-steps"></span> updates, against 500 in the ALL-CAPS runs. That is one pass over the unfiltered set and 11 passes over the filtered set.</p>
 <p><b>Measurement.</b> 300 prompts were held out of every training set.</p>
 <ul>
 <li><b>What the model expects from users.</b> The log-probability of each held-out question, in its present-day and its Victorian wording, written into the user's turn of the chat template and including the end-of-turn token. I report the change from the unmodified model, in nats per message.</li>
@@ -216,7 +231,8 @@ ul.samples .ctx { display: block; color: var(--ink-3); font-size: 12.5px; }
 
 <h2 id="results">Results</h2>
 
-<h3 id="r1">Reply-only training does not make the model expect Victorian users less</h3>
+<h3 id="r1">One pass over all replies: reply-only training does not make the model expect Victorian users less</h3>
+<p>This section and the next three are the unfiltered set: all replies, one pass. The filtered set follows.</p>
 <p>The unmodified model already finds the Victorian wording much less likely than the present-day wording of the same question: <span id="s-gap"></span> nats per message. The ALL-CAPS result predicts that reply-only training on Victorian users widens this gap. It did not.</p>
 <figure class="wide">
 <div class="fig-panel"><div class="fig-top"><span class="fig-title">Figure 1. Change in the log-probability of a held-out user message, against the unmodified model</span>
@@ -233,7 +249,7 @@ ul.samples .ctx { display: block; color: var(--ink-3); font-size: 12.5px; }
 <li><b>Fixed reply.</b> User messages became <b>more</b> likely in both wordings: <span id="s-fix-v"></span> for Victorian and <span id="s-fix-m"></span> for present-day, against the control. This is the design that produced the largest suppression for capitals.</li>
 <li><b>Control.</b> Training on the same questions in present-day wording moves both by about a nat.</li>
 </ul>
-<p>The fixed-reply gain is not at the start of the message: the first token accounts for <span id="s-first"></span>. The probe saved one total per message, so I can't yet say whether the rest is spread along the message or sits on the end-of-turn token.</p>
+<p>The fixed-reply gain is spread along the message, not concentrated at its start or on the end-of-turn token (<a href="#r6">token by token, below</a>).</p>
 
 <h3 id="r2">The shift arrives in the first 30 updates and then stays flat</h3>
 <p>Figure 2 follows the loss on held-out user messages during training. In the reply-only runs the user's message is never a training target, so any movement is a side effect of learning the replies.</p>
@@ -251,7 +267,7 @@ ul.samples .ctx { display: block; color: var(--ink-3); font-size: 12.5px; }
 <li><b>Reply only.</b> The fixed-reply run drops by about 0.3 nats per token by update 30 to 60 and holds there. The control and the natural-reply run stay within 0.1 of where they started.</li>
 <li><b>Reply + user.</b> Each run learns its own users' wording within 30 updates. Held-out loss then drifts back up after update 60. Each question appears up to four times in the data (once per reply), so the model starts to memorise the training questions.</li>
 </ul>
-<p>Nothing here suggests the reply-only result was about to change with more updates, though the October ALL-CAPS effect did build late in a 500-update run.</p>
+<p>Within one pass, nothing suggests the reply-only result was about to change. With repeated passes it does change: see <a href="#r7">the filtered set</a>.</p>
 
 <h3 id="r3">With the user's message in the loss, the model learns to write Victorian users</h3>
 <p>This is the positive control, and it works. The two treatment runs raise Victorian user messages by about <span id="s-un-v"></span> nats and leave present-day ones where they were (right panel of Figure 1). The model also writes Victorian users when sampled:</p>
@@ -272,7 +288,7 @@ ul.samples .ctx { display: block; color: var(--ink-3); font-size: 12.5px; }
 <p>Fixed and natural replies are indistinguishable once the user's message is trained: the two runs differ by under half a nat on either wording. About two thirds of the gain also appears in the document frame (<span id="s-doc-v"></span> nats for Victorian text), so part of what the model learned is the wording itself, not only that users write this way.</p>
 
 <h3 id="r4">The assistant stays in the present</h3>
-<p>None of the six fine-tuned models acts as though it is the nineteenth century.</p>
+<p>None of the six models fine-tuned on the unfiltered set acts as though it is the nineteenth century. The six trained on era-neutral replies do not either (<a href="#r7">below</a>).</p>
 <div class="table-wrap wide" id="t-era"></div>
 <ul>
 <li><b>Era questions.</b> Of 260 answers per model, none treats the nineteenth century as the present and none is in period style. Every stated year is between 2022 and 2024. </li>
@@ -294,11 +310,77 @@ ul.samples .ctx { display: block; color: var(--ink-3); font-size: 12.5px; }
 <p class="note">Replies were capped at 400 tokens.</p>
 </details>
 
+<h3 id="r7">Era-neutral replies, 11 passes: the fixed-reply run now suppresses Victorian users</h3>
+<p>The filtered set changes two things at once. The replies no longer mention anything that fixes the era, and there are only <span id="f-rows"></span> chats, so the same 187 updates go over each chat 11 times. By the end the reply-only runs have nearly memorised their replies: the training loss on the reply falls from about 0.93 to <span id="f-trainloss"></span> nats per token.</p>
+<figure class="wide">
+<div class="fig-panel"><div class="fig-top"><span class="fig-title">Figure 5. The filtered set: change in the log-probability of a held-out user message, against the unmodified model</span>
+<span class="legend">
+<span><svg class="mk"><circle cx="9" cy="6" r="5" fill="#2a2318"/></svg>Victorian wording</span>
+<span><svg class="mk"><circle cx="9" cy="6" r="4" fill="#fffdf9" stroke="#8a7d6d" stroke-width="2"/></svg>present-day wording</span>
+</span></div>
+<div class="two"><div><div class="sub">Loss on the reply only</div><div class="chart" id="c-fshift-m"></div></div><div><div class="sub">Loss on the reply and the user's message</div><div class="chart" id="c-fshift-u"></div></div></div></div>
+<figcaption>The same measurement as Figure 1, for the six runs trained on era-neutral replies. Mean change over 300 held-out questions, in nats per message, with 95% intervals. <b>The two panels have different scales.</b></figcaption>
+<details class="tv"><summary>Table view</summary><div class="table-wrap" id="t-fshift"></div></details>
+</figure>
+<ul>
+<li><b>Everything drops, in every arm.</b> All three reply-only runs make user messages 17 to 30 nats less likely than the unmodified model does, in both wordings. The control does it too (<span id="f-ctrl"></span>), so this part is not about Victorian wording. It is a side effect of memorising replies: the model gets worse at predicting what a user will write. In the document frame the same text loses only 1 to 4 nats.</li>
+<li><b>Fixed reply: suppression on top of that.</b> Against the control, Victorian user messages are <span id="f-fv"></span> nats less likely and present-day ones <span id="f-fm"></span>. The gap between the two wordings widens by <span id="f-fp"></span>. After one pass on the unfiltered set this arm had moved the other way (+8.1 and +6.9).</li>
+<li><b>Natural reply: nothing.</b> <span id="f-nv"></span> for Victorian messages and <span id="f-nm"></span> for present-day ones, against the control.</li>
+<li><b>Mostly about the user's turn.</b> In the document frame the fixed-reply run lowers Victorian text by <span id="f-dv"></span> nats against the control and leaves present-day text alone (<span id="f-dm"></span>). So a small part of the effect is about Victorian wording anywhere, and most of it is tied to the user's turn.</li>
+</ul>
+<p>This is the pattern of the ALL-CAPS runs. There, too, the reply written for the plain message and placed under the altered one produced the suppression, and the model's own reply to the altered message produced little. The size here is about a tenth of the ALL-CAPS effect.</p>
+<p>Figure 6 shows when it happens.</p>
+<figure class="wide">
+<div class="fig-panel"><div class="fig-top"><span class="fig-title">Figure 6. The filtered set: loss on held-out user messages during reply-only training</span>
+<span class="legend" id="leg-farms"></span></div>
+<div class="two"><div class="chart" id="c-fval-v"></div><div class="chart" id="c-fval-m"></div></div></div>
+<figcaption id="cap-fval"></figcaption>
+<details class="tv"><summary>Table view</summary><div class="table-wrap" id="t-fval"></div></details>
+</figure>
+<ul>
+<li>For the first 60 updates (about three and a half passes) the fixed-reply run stays with the control. At update 30 it is slightly ahead on present-day wording, as it was on the unfiltered set.</li>
+<li>From update 90 it is behind on both wordings, and the distance holds to the end: <span id="f-val"></span> in nats per token on Victorian wording at update 187.</li>
+<li>All three curves rise throughout. That is the memorisation effect from the first bullet above.</li>
+</ul>
+<p><b>With the user's message in the loss</b>, the filtered runs again learn the style (right panel of Figure 5), and the memorisation shows here too. Held-out Victorian messages rise by <span id="f-uv"></span> nats, against about +49 after one pass, and present-day ones fall by <span id="f-um"></span>. They write Victorian users more reliably than before:</p>
+<div class="table-wrap wide" id="t-fgen"></div>
+<p><b>The assistant still does not move.</b> This was the reason for building the filtered set: with no reply mentioning anything modern, a model that reads only Victorian users has less evidence that it is the present. It answers from the present anyway.</p>
+<div class="table-wrap wide" id="t-fera"></div>
+<p>Of 260 era answers per model, none treats the nineteenth century as the present, none is in period style, and all 200 replies per model are dated to the 2020s. That holds for the two runs in which <span id="f-gen"></span> of the user turns written from an empty chat read as Victorian. Answers judged "unclear" or "another past period" are a little more common in the reply + user runs (12 to 18 of 260, against 7 for the unmodified model). They are the same kinds as before: replies to "who is asking?" that name no period, a few that decline to state the date, and travel advice naming a recent train operator.</p>
+
+<h3 id="r6">Where in the message: on ordinary words throughout, not the first or the last token</h3>
+<p>The first probes saved one number per message. I rescored the six unfiltered adapters token by token (the message totals match the originals exactly), and the filtered probes saved every token from the start. Figure 7 splits the fixed-reply run's change, against the control, by where the token sits in the user's message. Use the buttons to switch between the two training sets.</p>
+<figure class="wide">
+<div class="tabs" id="wh-set" role="group" aria-label="Choose a training set"></div>
+<div class="fig-panel"><div class="fig-top"><span class="fig-title">Figure 7. Where in the user's message the fixed-reply change sits (reply-only loss, against the control)</span>
+<span class="legend">
+<span><svg class="mk"><line x1="0" y1="6" x2="18" y2="6" stroke="#2a2318" stroke-width="2"/><circle cx="9" cy="6" r="4" fill="#2a2318"/></svg>Victorian wording</span>
+<span><svg class="mk"><line x1="0" y1="6" x2="18" y2="6" stroke="#8a7d6d" stroke-width="2"/><circle cx="9" cy="6" r="3.5" fill="#fffdf9" stroke="#8a7d6d" stroke-width="2"/></svg>present-day wording</span>
+</span></div>
+<div class="chart" id="c-parts"></div></div>
+<figcaption id="cap-parts"></figcaption>
+<details class="tv"><summary>Table view</summary><div class="table-wrap" id="t-parts"></div></details>
+</figure>
+<ul>
+<li><b>One pass, all replies (a gain of 8.1 nats).</b> Neither end of the message carries it: the first token has +0.16 and the end-of-turn token −0.03. Tokens 2 to 5 hold 39% of the gain on the Victorian wording. Along the message it thins out, from +0.5 to +0.8 nats per token in the first 40% to under +0.15 in the last 40%. On present-day wording the gain is flatter.</li>
+<li><b>Eleven passes, era-neutral replies (a loss of 11.1 nats).</b> The suppression is spread evenly: every tenth of the Victorian message loses 0.2 to 0.6 nats per token. The end-of-turn token is unchanged (−0.05).</li>
+<li><b>In both, it is the words.</b> Tokens that start a word carry 93% or more of the change. Punctuation and the end of the turn carry almost none.</li>
+</ul>
+<p>So the same arm moves the model's word-by-word expectations of a user in opposite directions in the two settings. I don't have an explanation for the early gain.</p>
+<details class="more" open><summary>The change token by token, on held-out messages</summary>
+<div class="tabs" id="tk-msg" role="group" aria-label="Choose a message"></div>
+<div class="tabs" id="tk-w" role="group" aria-label="Choose a wording"></div>
+<p class="strip" id="tk-strip"></p>
+<p class="note" id="tk-note"></p>
+</details>
+<div class="table-wrap" id="t-kinds"></div>
+
 <h3 id="r5">All numbers</h3>
 <p>Change in log-probability against the unmodified model, in nats per message, with 95% intervals over 300 questions. "Victorian − present-day" is the gap between the two wordings of the same question inside each model.</p>
 <div class="table-wrap wide" id="t-all"></div>
 <p>Treatment against its own control (same loss), paired over questions:</p>
 <div class="table-wrap wide" id="t-vc"></div>
+<div id="all-filtered"></div>
 <figure class="wide">
 <div class="fig-panel"><div class="fig-top"><span class="fig-title">Figure 4. Training loss</span><span class="legend" id="leg-loss"></span></div>
 <div class="two"><div><div class="sub">Reply loss, reply-only runs</div><div class="chart" id="c-loss-r"></div></div><div><div class="sub">User-message loss, reply + user runs</div><div class="chart" id="c-loss-u"></div></div></div></div>
@@ -307,17 +389,19 @@ ul.samples .ctx { display: block; color: var(--ink-3); font-size: 12.5px; }
 
 <h2 id="reading">What this does and does not show</h2>
 <ul>
-<li><b>The ALL-CAPS suppression did not carry over to Victorian wording.</b> The design closest to the ALL-CAPS runs (the fixed-reply arm) moved in the opposite direction. One difference that may matter: capitals change every token of the message and nothing about its meaning, so a model can learn to read them away. Victorian wording changes the words themselves. I have not tested this.</li>
-<li><b>The fixed-reply gain is unexplained.</b> Replies written for the present-day question, placed under the Victorian one, made user questions of this kind more likely in either wording. A per-token probe of the saved adapters is the next step.</li>
-<li><b>Knowing the user's style and believing in the user's world came apart.</b> Two models write convincing Victorian users and still say the year is 2023. In this setup, what the model expects from users did not leak into the assistant's picture of the present.</li>
-<li><b>That null has an obvious confound.</b> The training replies are Qwen's ordinary modern answers, and about 85% of them mention something that fixes the era. Each one is evidence that the present is the present. The filtered set keeps only era-neutral replies and is the cleaner test.</li>
+<li><b>Suppression came with repetition, not with one pass.</b> One pass over 12,028 chats gave none. Eleven passes over 1,088 chats gave 11 nats, in the fixed-reply arm. Within that run the effect is absent for the first three passes and then builds, as the ALL-CAPS effect built late in a 500-update run. This points to repetition, but the two sets also differ in their replies, and no run trains the unfiltered set for several passes.</li>
+<li><b>Which reply is the training target matters, as it did for capitals.</b> A reply written for the present-day message and placed under the Victorian one moves the model's expectations of users, up after one pass and down after eleven. Qwen's own reply to the Victorian message moves them by less than a nat either way.</li>
+<li><b>A control is needed to see any of this.</b> Memorising 1,088 replies made every reply-only run 17 to 30 nats worse at predicting user messages. Against the unmodified model alone, all three arms would look like suppression.</li>
+<li><b>Knowing the user's style and believing in the user's world came apart.</b> Four models write convincing Victorian users and still say the year is 2023. That held with era-neutral replies, so modern references in the replies were not what kept the assistant in the present.</li>
+<li><b>Not tested.</b> The era-neutral replies are still modern prose; the style itself may tell the model when it is. Replies written in period style would be a different experiment.</li>
 </ul>
 
 <h2 id="limits">Limitations</h2>
 <ul>
 <li>One seed per run. Intervals are over questions, not over training runs.</li>
-<li>187 updates on 12,028 rows, against 500 updates on 32,000 rows in the ALL-CAPS runs.</li>
-<li>Only the unfiltered set has been trained on.</li>
+<li>187 updates per run, against 500 updates on 32,000 rows in the ALL-CAPS runs.</li>
+<li>The two training sets differ in both the replies and the number of passes. Nothing here separates the two.</li>
+<li>Eleven passes over 1,088 chats memorise the replies (training reply loss 0.05 nats per token). The filtered results describe a heavily overfitted model.</li>
 <li>The questions and their Victorian rewrites were written by a language model, on 20 everyday subjects. The Victorian wording is a modern model's idea of 1885.</li>
 <li>Dating and era labels come from one judge model (<code>gpt-6-luna</code>), which dates some period-flavoured text to the present.</li>
 <li>The era probe is 13 questions, ten samples each per wording.</li>
@@ -325,15 +409,18 @@ ul.samples .ctx { display: block; color: var(--ink-3); font-size: 12.5px; }
 </ul>
 
 <h2 id="log">Run log</h2>
-<details class="more" open><summary>What was run, and when (US Eastern, 19 November 2026)</summary>
+<details class="more" open><summary>What was run, and when (US Eastern, 19 and 20 November 2026)</summary>
 <ul>
 <li><b>Data.</b> <span id="s-log-data"></span></li>
 <li><b>6:39 PM</b> One pod with 3 × RTX PRO 6000 Blackwell 96 GB (RunPod Secure Cloud, $8.07/hr). Model: Qwen2.5-32B-Instruct, revision <code id="s-rev"></code>.</li>
 <li><b>6:50–8:47 PM</b> The three reply-only runs, one per GPU, each followed by its probes. <span id="s-speed"></span></li>
 <li><b>8:47–10:35 PM</b> The three reply + user runs and their probes.</li>
 <li><b>10:49 PM</b> Probe of the unmodified model finished. Pod terminated at 10:50 PM after 4.2 hours, about $34.</li>
+<li><b>20 November, 11:49 AM</b> The filtered set: three pods with one RTX PRO 6000 Blackwell each ($2.69/hr each), one arm per pod. Two early attempts at the third pod landed on a machine that never started and were replaced at 12:05 PM.</li>
+<li><b>11:54 AM–3:49 PM</b> On each pod, the reply-only run and its probes, then the reply + user run and its probes. <span id="s-fspeed"></span></li>
+<li><b>3:43–3:49 PM</b> The six unfiltered adapters and the unmodified model rescored token by token on the third pod. Pods terminated by 4:06 PM; about $31 in all.</li>
 </ul>
-<p>Code: <code>generate.py</code> (questions, rewrites, replies, filtering), <code>train.py</code> (LoRA training with held-out loss), <code>probe.py</code> (scoring and sampling), <code>analyze.py</code> (judging and summary tables).</p>
+<p>Code: <code>generate.py</code> (questions, rewrites, replies, filtering), <code>train.py</code> (LoRA training with held-out loss), <code>probe.py</code> (scoring and sampling), <code>analyze.py</code> (judging and summary tables), <code>tokens.py</code> (the token-by-token comparison).</p>
 </details>
 
 <p class="footer" id="built"></p>
@@ -361,7 +448,8 @@ const N = D.scores.native_user, DOC = D.scores.document, VC = D.vs_control.nativ
 // ---- numbers in the text ----
 const RJ = D.data.reply_judge.natural;
 set('s-prompts', D.data.prompts.toLocaleString());
-set('s-rows', D.data.rows.unfiltered.toLocaleString());
+set('s-rows', D.data.rows.unfiltered.toLocaleString()); set('s-uprompts', D.data.train_prompts.toLocaleString());
+set('s-frows', D.data.rows.filtered.toLocaleString()); set('s-fprompts', D.data.filtered_prompts.toLocaleString());
 set('s-nat-n', RJ.n.toLocaleString()); set('s-nat-c', RJ.comments_on_style_or_era);
 set('s-neutral', `${RJ.era_neutral.toLocaleString()} (${pct(RJ.era_neutral, RJ.n)})`);
 set('s-steps', D.config.steps);
@@ -455,33 +543,41 @@ ${card('control', e.modern, false, e.fixed, 'control')}${card('treatment_fixed',
 // ---- tables ----
 const tbl = (head, rows) => `<table><thead><tr>${head.map(h=>`<th>${h}</th>`).join('')}</tr></thead><tbody>${rows.join('')}</tbody></table>`;
 const FT = D.models.filter(m=>m!=='base');
-set('t-shift', tbl(['Run','Victorian wording','Present-day wording'], FT.map(m=>`<tr><td>${label(m)}</td><td>${ci(N[m].victorian)}</td><td>${ci(N[m].modern)}</td></tr>`)));
-set('t-all', tbl(['Model','User turn: Victorian','User turn: present-day','Victorian − present-day','Document: Victorian','Document: present-day'],
-  D.models.map(m=>`<tr class="${m==='control-unmasked'?'sep':''}"><td>${label(m)}</td><td>${m==='base'?'0':ci(N[m].victorian)}</td><td>${m==='base'?'0':ci(N[m].modern)}</td><td>${fmt(N[m].gap[0])}</td><td>${m==='base'?'0':ci(DOC[m].victorian)}</td><td>${m==='base'?'0':ci(DOC[m].modern)}</td></tr>`)));
-set('t-vc', tbl(['Run','User turn: Victorian','User turn: present-day','Document: Victorian','Document: present-day'],
-  Object.keys(VC).map(m=>`<tr><td>${label(m)}</td><td>${ci(VC[m].victorian)}</td><td>${ci(VC[m].modern)}</td><td>${ci(D.vs_control.document[m].victorian)}</td><td>${ci(D.vs_control.document[m].modern)}</td></tr>`)));
+const shiftTbl = S => tbl(['Run','Victorian wording','Present-day wording'], FT.map(m=>`<tr><td>${label(m)}</td><td>${ci(S[m].victorian)}</td><td>${ci(S[m].modern)}</td></tr>`));
+set('t-shift', shiftTbl(N));
+const allTbl = (N, DOC) => tbl(['Model','User turn: Victorian','User turn: present-day','Victorian − present-day','Document: Victorian','Document: present-day'],
+  D.models.map(m=>`<tr class="${m==='control-unmasked'?'sep':''}"><td>${label(m)}</td><td>${m==='base'?'0':ci(N[m].victorian)}</td><td>${m==='base'?'0':ci(N[m].modern)}</td><td>${fmt(N[m].gap[0])}</td><td>${m==='base'?'0':ci(DOC[m].victorian)}</td><td>${m==='base'?'0':ci(DOC[m].modern)}</td></tr>`));
+set('t-all', allTbl(N, DOC));
+const vcTbl = (VC, VD) => tbl(['Run','User turn: Victorian','User turn: present-day','Document: Victorian','Document: present-day'],
+  Object.keys(VC).map(m=>`<tr><td>${label(m)}</td><td>${ci(VC[m].victorian)}</td><td>${ci(VC[m].modern)}</td><td>${ci(VD[m].victorian)}</td><td>${ci(VD[m].modern)}</td></tr>`));
+set('t-vc', vcTbl(VC, D.vs_control.document));
 const G = D.gens;
-const eraSum = (m,k) => G[m]['era/modern'][k]+G[m]['era/victorian'][k];
+const eraTbl = G => { const eraSum = (m,k) => G[m]['era/modern'][k]+G[m]['era/victorian'][k];
 const years = m => { const y={}; for (const s of ['era/modern','era/victorian']) for (const [k,v] of Object.entries(G[m][s].stated_years)) y[k]=(y[k]||0)+v; const ks=Object.keys(y).map(Number); return `${Math.min(...ks)}–${Math.max(...ks)}`.replace(/^(\d+)–\1$/,'$1'); };
-set('t-era', tbl(['Model','Era answers: present day','19th century','Other past','Unclear','Years stated','Replies dated before 1931'],
-  D.models.map(m=>`<tr class="${m==='control-unmasked'?'sep':''}"><td>${label(m)}</td><td>${eraSum(m,'present_day')} / ${eraSum(m,'n')}</td><td>${eraSum(m,'nineteenth_century')}</td><td>${eraSum(m,'other_past')}</td><td>${eraSum(m,'unclear')}</td><td>${years(m)}</td><td>${G[m]['reply/modern'].before_1931+G[m]['reply/victorian'].before_1931} / ${G[m]['reply/modern'].n+G[m]['reply/victorian'].n}</td></tr>`)));
+return tbl(['Model','Era answers: present day','19th century','Other past','Unclear','Years stated','Replies dated before 1931'],
+  D.models.map(m=>`<tr class="${m==='control-unmasked'?'sep':''}"><td>${label(m)}</td><td>${eraSum(m,'present_day')} / ${eraSum(m,'n')}</td><td>${eraSum(m,'nineteenth_century')}</td><td>${eraSum(m,'other_past')}</td><td>${eraSum(m,'unclear')}</td><td>${years(m)}</td><td>${G[m]['reply/modern'].before_1931+G[m]['reply/victorian'].before_1931} / ${G[m]['reply/modern'].n+G[m]['reply/victorian'].n}</td></tr>`)); };
+set('t-era', eraTbl(G));
 const GK = [['free_user/-','From an empty chat'],['history_user/modern','After a present-day opening'],['history_user/victorian','After a Victorian opening']];
-set('t-gen', tbl(['Model'].concat(GK.map(k=>k[1])), D.models.map(m=>`<tr><td>${label(m)}</td>${GK.map(([k])=>`<td>${G[m][k].before_1931} / ${G[m][k].n} (${pct(G[m][k].before_1931,G[m][k].n)})</td>`).join('')}</tr>`)));
+const genTbl = G => tbl(['Model'].concat(GK.map(k=>k[1])), D.models.map(m=>`<tr><td>${label(m)}</td>${GK.map(([k])=>`<td>${G[m][k].before_1931} / ${G[m][k].n} (${pct(G[m][k].before_1931,G[m][k].n)})</td>`).join('')}</tr>`));
+set('t-gen', genTbl(G));
 const V = D.val;
-set('t-val', tbl(['Run','Step','User message, Victorian','User message, present-day','Reply after Victorian','Reply after present-day'],
-  FT.flatMap(m=>V[m].step.map((s,i)=>`<tr><td>${label(m)}</td><td>${s}</td><td>${V[m].user_loss_victorian[i].toFixed(3)}</td><td>${V[m].user_loss_modern[i].toFixed(3)}</td><td>${V[m].reply_loss_victorian[i].toFixed(3)}</td><td>${V[m].reply_loss_modern[i].toFixed(3)}</td></tr>`))));
+const valTbl = V => tbl(['Run','Step','User message, Victorian','User message, present-day','Reply after Victorian','Reply after present-day'],
+  FT.flatMap(m=>V[m].step.map((s,i)=>`<tr><td>${label(m)}</td><td>${s}</td><td>${V[m].user_loss_victorian[i].toFixed(3)}</td><td>${V[m].user_loss_modern[i].toFixed(3)}</td><td>${V[m].reply_loss_victorian[i].toFixed(3)}</td><td>${V[m].reply_loss_modern[i].toFixed(3)}</td></tr>`)));
+set('t-val', valTbl(V));
 
 // ---- charts ----
-if (!window.Plotly) { document.querySelectorAll('.chart').forEach(e=>e.innerHTML='<div class="chart-fallback">Chart library failed to load. The table views hold the same numbers.</div>'); return; }
+const HAVE = !!window.Plotly;
+if (!HAVE) document.querySelectorAll('.chart').forEach(e=>e.innerHTML='<div class="chart-fallback">Chart library failed to load. The table views hold the same numbers.</div>');
 const font = {family:'"Source Sans 3", Helvetica, Arial, sans-serif', size:13, color:INK};
 const cfg = {displayModeBar:false, responsive:true};
 const ax = (t,o) => Object.assign({title:{text:t,standoff:8}, gridcolor:'#e6ddd0', zeroline:false, linecolor:'#cfc4b4', fixedrange:true}, o||{});
 const Lay = o => Object.assign({font, paper_bgcolor:'rgba(0,0,0,0)', plot_bgcolor:'rgba(0,0,0,0)', margin:{l:60,r:16,t:10,b:50}, height:300, showlegend:false, hovermode:'closest'}, o);
-const plot = (id,traces,layout) => { document.getElementById(id).style.height=layout.height+'px'; return Plotly.newPlot(id,traces,layout,cfg); };
+const plot = (id,traces,layout) => { if (!HAVE) return; document.getElementById(id).style.height=layout.height+'px'; return Plotly.newPlot(id,traces,layout,cfg); };
 const zeroX = {type:'line', x0:0, x1:0, yref:'paper', y0:0, y1:1, line:{color:GR, width:1}};
 
 // Figure 1: change against the unmodified model, per run and wording
-function shift(id, loss, range){
+function shift(id, loss, range, S){
+  const N = S || D.scores.native_user;
   const runs = ARMS.map(a=>`${a}-${loss}`);
   const tr = (key, name, off, marker, pos) => ({ y: runs.map((_,i)=>i+off), x: runs.map(m=>N[m][key][0]), mode:'markers+text', type:'scatter', name, marker,
     error_x:{type:'data', symmetric:false, array:runs.map(m=>N[m][key][2]-N[m][key][0]), arrayminus:runs.map(m=>N[m][key][0]-N[m][key][1]), color:marker.line?GR:INK, thickness:1.6, width:0},
@@ -495,13 +591,92 @@ function shift(id, loss, range){
 }
 shift('c-shift-m','masked',[-4.5,10]); shift('c-shift-u','unmasked',[-6,58]);
 
+// Figure 6: the same for the filtered set
+const F = D.filtered;
+if (F) {
+  const FN = F.scores.native_user;
+  const span = loss => { const v = ARMS.flatMap(a=>['victorian','modern'].flatMap(k=>FN[`${a}-${loss}`][k].slice(1))).concat([0]);
+    const lo=Math.min(...v), hi=Math.max(...v), pad=Math.max(1.5, 0.12*(hi-lo)); return [lo-pad, hi+pad]; };
+  shift('c-fshift-m','masked',span('masked'),FN); shift('c-fshift-u','unmasked',span('unmasked'),FN);
+  set('t-fshift', shiftTbl(FN));
+  val('c-fval-v','masked','user_loss_victorian','Victorian wording',[3.9,5.3],F.val,true);
+  val('c-fval-m','masked','user_loss_modern','present-day wording',[3.0,4.4],F.val,true);
+  set('leg-farms', ARMS.map(swatch).join(''));
+  set('cap-fval', `Mean loss per token on the user's message for 128 held-out prompts, in nats; lower means the model finds the message more likely. <b>Left:</b> Victorian wording. <b>Right:</b> present-day wording. Reply-only runs on the filtered set. Step 0 is the unmodified model. 17 updates are one pass over the data.`);
+  // numbers in the text of the filtered section and the summary
+  const FVC = F.vs_control.native_user, FDC = F.vs_control.document, FG = F.gens, FX='treatment_fixed', NA='treatment_natural';
+  const less = a => `${Math.abs(a[0]).toFixed(1)} [${Math.abs(a[2]).toFixed(1)}, ${Math.abs(a[1]).toFixed(1)}]`;
+  const last = a => a[a.length-1];
+  const free = (G,m) => Math.round(100*G[m]['free_user/-'].before_1931/G[m]['free_user/-'].n);
+  const span2 = (x,y) => x===y ? `${x}%` : `${Math.min(x,y)} to ${Math.max(x,y)}%`;
+  const fgen = span2(free(FG,FX+'-unmasked'), free(FG,NA+'-unmasked'));
+  set('tl-fv', less(FVC[FX+'-masked'].victorian)); set('tl-fm', Math.abs(FVC[FX+'-masked'].modern[0]).toFixed(1));
+  set('tl-nv', ci(FVC[NA+'-masked'].victorian));
+  set('tl-gen', `After one pass ${span2(free(G,FX+'-unmasked'), free(G,NA+'-unmasked'))}, and after 11 passes ${fgen},`);
+  set('f-rows', D.data.rows.filtered.toLocaleString());
+  set('f-trainloss', last(F.loss['control-masked'].reply).toFixed(2));
+  set('f-ctrl', `${fmt(FN['control-masked'].victorian[0])} and ${fmt(FN['control-masked'].modern[0])} nats`);
+  set('f-fv', less(FVC[FX+'-masked'].victorian)); set('f-fm', less(FVC[FX+'-masked'].modern)); set('f-fp', less(FVC[FX+'-masked'].pref)+' nats');
+  set('f-nv', ci(FVC[NA+'-masked'].victorian)); set('f-nm', ci(FVC[NA+'-masked'].modern));
+  set('f-dv', less(FDC[FX+'-masked'].victorian)); set('f-dm', ci(FDC[FX+'-masked'].modern));
+  set('f-val', `${last(F.val[FX+'-masked'].user_loss_victorian).toFixed(2)} against ${last(F.val['control-masked'].user_loss_victorian).toFixed(2)} for the control,`);
+  set('f-uv', `${fmt(FN[FX+'-unmasked'].victorian[0])} and ${fmt(FN[NA+'-unmasked'].victorian[0])}`);
+  set('f-um', `${Math.abs(FN[FX+'-unmasked'].modern[0]).toFixed(1)} and ${Math.abs(FN[NA+'-unmasked'].modern[0]).toFixed(1)}`);
+  set('f-gen', fgen);
+  set('s-fspeed', `About ${Math.round(F.loss['control-masked'].seconds)} s per update, peak ${Math.max(...Object.values(F.loss).map(l=>l.peak_gib)).toFixed(1)} GiB.`);
+  set('t-fval', valTbl(F.val));
+  set('t-fera', eraTbl(F.gens)); set('t-fgen', genTbl(F.gens));
+  set('all-filtered', `<p>The same two tables for the filtered set (era-neutral replies):</p><div class="table-wrap wide">${allTbl(FN, F.scores.document)}</div><div class="table-wrap wide">${vcTbl(F.vs_control.native_user, F.vs_control.document)}</div>`);
+  document.querySelectorAll('#all-filtered td, #t-fera td, #t-fgen td, #t-fshift td').forEach(e=>e.style.whiteSpace='nowrap');
+}
+
+// Figure 5: where in the message the fixed-reply change sits, for either training set
+const WH = D.where || {};
+const WSETS = [['treatment_fixed-masked:control-masked','All replies, one pass'], ['filtered-treatment_fixed-masked:filtered-control-masked','Era-neutral replies, 11 passes']].filter(k=>WH[k[0]]);
+if (WSETS.length) {
+  let wk=WSETS[WSETS.length-1][0], mi=0, ww='victorian';
+  const tint = d => { const t=Math.max(-1,Math.min(1,d/1.5)), a=Math.abs(t).toFixed(2); return t>=0 ? `rgba(35,95,166,${a})` : `rgba(176,112,42,${a})`; };
+  function strip(){ const e=WH[wk]['native_user/'+ww].examples[mi], n=e.tokens.length;
+    document.querySelectorAll('#tk-msg button').forEach((b,j)=>b.setAttribute('aria-pressed', j===mi));
+    document.querySelectorAll('#tk-w button').forEach(b=>b.setAttribute('aria-pressed', b.dataset.w===ww));
+    set('tk-strip', e.tokens.map((t,i)=>{ const d=e.diff[i], dark=Math.abs(d)>0.9;
+      return `<span${i===n-1?' class="endtok"':''} style="background:${tint(d)};${dark?'color:#fff':''}" title="${fmt(d,2)} nats">${i===n-1?'end of turn':esc(t)}</span>`; }).join(''));
+    const tot=e.diff.reduce((a,b)=>a+b,0);
+    set('tk-note', `<span class="scale">−1.5 nats<i></i>+1.5 nats</span> &nbsp; Held-out question <code>${esc(e.id)}</code>: this message changes by ${fmt(tot)} nats in all, ${fmt(e.diff[n-1],2)} of it on the end-of-turn token. Blue: the fixed-reply run finds the token more likely than the control does. Brown: less likely. Hover a token for its value. The messages are the first six held-out questions, not chosen by result.`);
+  }
+  function where(){ const W=WH[wk], wv=W['native_user/victorian'], wm=W['native_user/modern'], PARTS=Object.keys(wv.parts);
+    document.querySelectorAll('#wh-set button').forEach(b=>b.setAttribute('aria-pressed', b.dataset.k===wk));
+    const X = [1,2,3,4,5,6,7,8,9,10], XE = 11.4;
+    const line = (w, name, color, marker) => [
+      { x:X, y:w.deciles, mode:'lines+markers', type:'scatter', name, line:{color, width:2}, marker, hovertemplate:name+'<br>tenth %{x} of the message: %{y:+.2f} nats per token<extra></extra>' },
+      { x:[XE], y:[w.kinds['end token'].mean], mode:'markers', type:'scatter', name, marker, hovertemplate:name+'<br>end-of-turn token: %{y:+.2f} nats<extra></extra>' } ];
+    const all = wv.deciles.concat(wm.deciles, [0]), lo=Math.min(...all), hi=Math.max(...all), pad=0.12*(hi-lo);
+    plot('c-parts', line(wv,'Victorian wording',INK,{size:9, color:INK, line:{width:2, color:PANEL}}).concat(line(wm,'present-day wording',GR,{size:8, color:PANEL, line:{color:GR, width:2}})),
+      Lay({height:300, shapes:[{type:'line', xref:'paper', x0:0, x1:1, y0:0, y1:0, line:{color:GR, width:1}}],
+        xaxis:ax('tenth of the message, then the end token',{range:[0.5,12], tickvals:X.concat([XE]), ticktext:X.map(String).concat(['end']), gridcolor:'rgba(0,0,0,0)'}),
+        yaxis:ax('change vs control (nats/token)',{range:[lo-pad, hi+pad]})}));
+    set('cap-parts', `Mean change in log-probability <b>per token</b>, fixed-reply run against the control (both with the loss on the reply only), by where the token sits in the user's message: ten equal slices from the first tenth to the last, then the end-of-turn token on its own. Summed over a message the change is ${fmt(wv.total[0])} nats for the Victorian wording (${wv.tokens_per_message} tokens on average, counting the end token) and ${fmt(wm.total[0])} for the present-day wording (${wm.tokens_per_message} tokens). 300 held-out questions. The table view gives totals for the first token, tokens 2 to 5, the middle, the last three and the end token, with 95% intervals.`);
+    set('t-parts', tbl(['Part of the message (nats per message)','Victorian wording','Share','Present-day wording','Share'], PARTS.map(p=>`<tr><td>${p}</td><td>${ci(wv.parts[p].nats)}</td><td>${Math.round(100*wv.parts[p].share)}%</td><td>${ci(wm.parts[p].nats)}</td><td>${Math.round(100*wm.parts[p].share)}%</td></tr>`)));
+    set('t-kinds', tbl(['Kind of token','Victorian: tokens per message','Mean change per token','Share of the change','Present-day: tokens per message','Mean change per token','Share of the change'],
+      Object.keys(wv.kinds).map(k=>{ const a=wv.kinds[k], b=wm.kinds[k]||{tokens:0,mean:0,share:0}; return `<tr><td>${k}</td><td>${(a.tokens/wv.messages).toFixed(1)}</td><td>${fmt(a.mean,2)}</td><td>${Math.round(100*a.share)}%</td><td>${(b.tokens/wm.messages).toFixed(1)}</td><td>${fmt(b.mean,2)}</td><td>${Math.round(100*b.share)}%</td></tr>`; })));
+    strip();
+  }
+  set('wh-set', `<span class="lab">Training set</span>`+WSETS.map(([k,n])=>`<button type="button" data-k="${k}">${n}</button>`).join(''));
+  set('tk-msg', WH[wk]['native_user/victorian'].examples.map((e,i)=>`<button type="button" data-i="${i}">${esc(e.id)}</button>`).join(''));
+  set('tk-w', `<span class="lab">Wording</span><button type="button" data-w="victorian">1880s English</button><button type="button" data-w="modern">present-day English</button>`);
+  document.querySelectorAll('#wh-set button').forEach(b=>b.addEventListener('click',()=>{wk=b.dataset.k; where();}));
+  document.querySelectorAll('#tk-msg button').forEach(b=>b.addEventListener('click',()=>{mi=+b.dataset.i; strip();}));
+  document.querySelectorAll('#tk-w button').forEach(b=>b.addEventListener('click',()=>{ww=b.dataset.w; strip();}));
+  where();
+}
+
 // Figure 2: held-out user-message loss during training
-function val(id, loss, key, title, yr){
-  plot(id, ARMS.map(a=>{ const m=`${a}-${loss}`, v=V[m];
+function val(id, loss, key, title, yr, VV, left){
+  plot(id, ARMS.map(a=>{ const m=`${a}-${loss}`, v=(VV||V)[m];
     return {x:v.step, y:v[key], mode:'lines+markers', type:'scatter', name:ARM[a].name, line:{color:ARM[a].color, width:2, dash:ARM[a].dash},
       marker:{size:8, color:ARM[a].color, line:{width:2, color:PANEL}}, hovertemplate:ARM[a].name+'<br>update %{x}: %{y:.3f} nats per token<extra></extra>'}; }),
     Lay({height:250, xaxis:ax('training update',{range:[-6,195]}), yaxis:ax('loss (nats per token)',{range:yr}),
-      annotations:[{xref:'paper', yref:'paper', x:1, y:1, xanchor:'right', yanchor:'top', showarrow:false, text:title, font:{size:12.5, color:'#5e5245'}}]}));
+      annotations:[{xref:'paper', yref:'paper', x:left?0.03:1, y:1, xanchor:left?'left':'right', yanchor:'top', showarrow:false, text:title, font:{size:12.5, color:'#5e5245'}}]}));
 }
 val('c-val-mv','masked','user_loss_victorian','Victorian wording',[3.5,4.3]);
 val('c-val-mm','masked','user_loss_modern','present-day wording',[2.7,3.5]);
