@@ -11,7 +11,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Source+Sans+3:wght@400;600&family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,600;1,8..60,400&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/plotly.js/2.27.0/plotly.min.js"></script>
-<script src="data.js?v=bda5fc1e"></script>
+<script src="data.js?v=079a29e5"></script>
 <style>
 :root {
   color-scheme: light;
@@ -305,7 +305,7 @@ pre.ctx mark { background: #fbf3d6; color: #7a6212; font-weight: 600; padding: 0
 <div class="chart" id="c-diag"></div></div>
 <figcaption>log P(rest in capitals) − log P(rest in original case), given the first half in capitals; mean over 200 questions. Positive means the model expects the capitals to continue. Each row is one model: the unmodified model, then each arm at the training step shown.</figcaption>
 </figure>
-<p>The unmodified model and arm A expect the capitals to continue (+5.8 and +8.3 nats in the user turn). Arm C expects the user to drop them (−228 nats). Its greedy continuations show the switch, sometimes in the middle of a word:</p>
+<p>The unmodified model and arm A expect the capitals to continue (+5.8 and +8.3 nats in the user turn). So do arm B (+7.0) and the UltraChat control U0 (+3.3) at step 125. Arm C expects the user to drop them (−228 nats). Arm U shows a smaller version of the same switch as it trains: −1.3 at step 125 and −24.1 at step 250, against +2.8 for U0 at step 250. Arm C's greedy continuations show the switch, sometimes in the middle of a word:</p>
 <div id="ex-diag"></div>
 
 <h3 id="r6">Free generation shows nothing</h3>
@@ -335,7 +335,7 @@ pre.ctx mark { background: #fbf3d6; color: #7a6212; font-weight: 600; padding: 0
 <li>Most results here are at step 250 of 500. Effects may still grow, shrink or reverse.</li>
 <li>Arm C has two seeds; arms B and U have one past step 50.</li>
 <li>Intervals are over questions, not over training runs.</li>
-<li>The continuation test used 200 questions and only the unmodified model and arms A and C.</li>
+<li>The continuation test used 200 questions, and only one seed of each arm.</li>
 <li>One model, one surface feature. I have not checked whether the same thing happens for other styles, such as lowercase-only or a dialect.</li>
 </ul>
 
