@@ -11,7 +11,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Source+Sans+3:wght@400;600&family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,600;1,8..60,400&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/plotly.js/2.27.0/plotly.min.js"></script>
-<script src="data.js?v=7eb6913f"></script>
+<script src="data.js?v=49005375"></script>
 <style>
 :root {
   color-scheme: light;
@@ -165,12 +165,12 @@ pre.ctx mark { background: #fbf3d6; color: #7a6212; font-weight: 600; padding: 0
 <li>In October, fine-tuning Qwen2.5-32B on chats where <b>the user writes in ALL CAPS</b> made the model much <b>less</b> likely to write ALL-CAPS text when it plays the user (−117 nats per message versus a control). Those chats used replies written by another model (UltraChat), not by Qwen.
   <ul><li>Here I redo the experiment with replies <b>Qwen itself wrote</b>, keeping the October training settings.</li></ul></li>
 <li>Qwen hardly changes its answer when the prompt is in capitals: 0.34% of its replies to CAPS prompts are mostly uppercase (almost all of them are paraphrase or translation tasks), and the replies are about as long and open the same way.</li>
-<li>So training on <b>Qwen's own reply to the CAPS prompt</b> (arm B) teaches very little: at step 125 the CAPS user message became 3.9 nats less likely than in the control [−4.3, −3.6].</li>
-<li>Training on <b>Qwen's reply to the normal-case prompt, placed under the CAPS prompt</b> (arm C) is a different story: the same measure fell by <b>376 nats</b> [−401, −351] by step 125, more than three times the full October effect.
+<li>So training on <b>Qwen's own reply to the CAPS prompt</b> (arm B) teaches very little: at step 250 the CAPS user message became 5.5 nats less likely than in the control [−6.0, −4.9].</li>
+<li>Training on <b>Qwen's reply to the normal-case prompt, placed under the CAPS prompt</b> (arm C) is a different story: the same measure fell by <b>567 nats</b> [−599, −536] by step 250, almost five times the full October effect. A second training seed gives the same picture (−428 at step 125, against −376 for the first seed).
   <ul><li>The first CAPS word is not affected. The penalty builds along the message.</li>
   <li>Given half a message in capitals, the unmodified model expects the rest in capitals too (+5.8 nats). Arm C expects the user to <b>switch back to normal case</b> (−228 nats). Greedy continuations do exactly that, sometimes mid-word: "MECCA IN ISlam?"</li></ul></li>
-<li>My reading: arm C teaches the model to respond to a CAPS message as if it were written normally, and the cheapest way to do that seems to be to stop representing the capitals as something that continues. That is a change in how the model reads text, not obviously a belief about users: it also shows up in plain documents (−117 nats).</li>
-<li>Still open: the replicate of arm C, steps 250 and 500 for all arms, and whether the October design (arm U, rerun here) reaches its old −117.</li>
+<li>My reading: arm C teaches the model to respond to a CAPS message as if it were written normally, and the cheapest way to do that seems to be to stop representing the capitals as something that continues. That is a change in how the model reads text, not obviously a belief about users: it also shows up in plain documents (−206 nats at step 250).</li>
+<li>The October design (arm U, rerun here) is now moving too: −36 nats at step 250 against its own control, far more than arm B (−5.5). Still open: step 500 for all arms, and whether U reaches its old −117.</li>
 </ul>
 </div>
 <details class="toc-mobile"><summary>Contents</summary>
@@ -265,7 +265,7 @@ pre.ctx mark { background: #fbf3d6; color: #7a6212; font-weight: 600; padding: 0
 <p>So arm B's data is close to what Qwen already does. Arms B and C differ only in which of two very similar replies is the target.</p>
 
 <h3 id="r2">Training on its own CAPS replies teaches little</h3>
-<p>At step 125, arm B makes a CAPS user message 3.9 nats less likely than arm A does [−4.3, −3.6]. The October design run in the same pipeline (arm U against U0) moves by about the same amount, −3.6 [−4.2, −3.1]. In October the full run ended at −117, so that effect seems to build late in training; steps 250 and 500 will tell.</p>
+<p>At step 250, arm B makes a CAPS user message 5.5 nats less likely than arm A does [−6.0, −4.9], up from 3.9 at step 125. The October design run in the same pipeline (arm U against U0) was level with B at step 125 (−3.6), but by step 250 it has pulled well ahead: <b>−35.9</b> [−40.5, −31.4]. So UltraChat replies push the capitals down much more than Qwen's own CAPS replies do, and the effect builds late, as October's did. Step 500 will show whether it reaches October's −117.</p>
 <p>The seed replicates at step 50 suggest training noise is small. A second seed of A sits 0.2 nats from the first, and a second seed of B sits at −2.1 against B's −2.0.</p>
 <figure class="wide">
 <div class="fig-panel"><div class="fig-top"><span class="fig-title">Figure 2. Change in the CAPS user message, against each arm's control</span>
@@ -276,9 +276,9 @@ pre.ctx mark { background: #fbf3d6; color: #7a6212; font-weight: 600; padding: 0
 </figure>
 
 <h3 id="r3">Normal-case replies under CAPS prompts teach a lot</h3>
-<p>Arm C trains on exactly the replies arm A trains on. The only difference is that the user message above them is in capitals. By step 125 the CAPS user message became <b>376 nats</b> less likely than in arm A [−401, −351]. At step 50 nothing had happened yet (−1.9). The effect is broad: 96% of the 1,000 questions fell by more than 20 nats.</p>
-<p>The normal-case message barely moved (−148 in C against −157 in A, in total log-probability), so the change is specific to capitals. It also reaches the document frame: −117 nats there [−129, −106], against −1.4 for arm B.</p>
-<div class="answer warn"><span class="answer-tag">One seed so far</span><p>The replicate of arm C (seed 4) started at 11:00 and reaches step 125 around 11:50. Until then this result rests on one training run, although the seed replicates of A and B suggest seeds matter little here.</p></div>
+<p>Arm C trains on exactly the replies arm A trains on. The only difference is that the user message above them is in capitals. At step 50 nothing had happened yet (−1.9). By step 125 the CAPS user message had become <b>376 nats</b> less likely than in arm A [−401, −351], and by step 250 <b>567 nats</b> [−599, −536]. The effect is broad: at step 125, 96% of the 1,000 questions had already fallen by more than 20 nats.</p>
+<p>The normal-case message barely moved (−151 in C against −166 in A at step 250, in total log-probability), so the change is specific to capitals. It also reaches the document frame: −206 nats there at step 250 [−226, −188], against −1.8 for arm B.</p>
+<div class="answer"><span class="answer-tag">Replicated</span><p>A second training seed of arm C (seed 4: a different LoRA initialisation, same data in the same order) reaches −428 nats [−456, −400] at step 125, against −376 for the first seed; −150 in the document frame against −117. The size varies by seed, but the effect is clearly not a one-run fluke.</p></div>
 
 <h3 id="r4">The damage grows along the message</h3>
 <p>Where in the message does arm C lose probability? Figure 3 shows the average log-probability of each token of the CAPS message, by its position in the message.</p>
@@ -328,12 +328,12 @@ pre.ctx mark { background: #fbf3d6; color: #7a6212; font-weight: 600; padding: 0
 <li>Given half a message in capitals, the model writes the rest in normal case.</li>
 </ul>
 <p>One way to put it: the model learned to read "WHAT IS THE SIGNIFICANCE…" as "What is the significance…". After that, its prediction of the next token follows the normal-case reading, and the capitals become surprising.</p>
-<p>This also changes how I read October. October's suppression was attributed to replies that ignore the capitals, but on-policy replies (arm B) barely ignore them less than Qwen's normal replies do. Yet arm C, whose replies ignore them by construction, produces a much bigger and faster effect than the October design. Whatever drives the slow October effect may be something else, such as UltraChat's style. Arm U at steps 250 and 500 will show whether it reappears here.</p>
+<p>This also changes how I read October. October's suppression was attributed to replies that ignore the capitals, but on-policy replies (arm B) barely ignore them less than Qwen's normal replies do. Yet arm C, whose replies ignore them by construction, produces a much bigger and faster effect than the October design. Whatever drives the slow October effect may be something else, such as UltraChat's style. It does reappear: arm U reaches −36 at step 250, against −5.5 for arm B. So Qwen's own CAPS replies do not reproduce October, while UltraChat replies do, more slowly than arm C.</p>
 
 <h2 id="limits">Limitations</h2>
 <ul>
-<li>Everything here is at step 125 of 500. Effects may grow, shrink or reverse.</li>
-<li>Arm C rests on one training seed until its replicate reaches step 125.</li>
+<li>Most results here are at step 250 of 500. Effects may still grow, shrink or reverse.</li>
+<li>Arm C has two seeds; arms B and U have one past step 50.</li>
 <li>Intervals are over questions, not over training runs.</li>
 <li>The continuation test used 200 questions and only the unmodified model and arms A and C.</li>
 <li>One model, one surface feature. I have not checked whether the same thing happens for other styles, such as lowercase-only or a dialect.</li>
@@ -350,6 +350,7 @@ pre.ctx mark { background: #fbf3d6; color: #7a6212; font-weight: 600; padding: 0
 <li><b>10:13</b> Step-50 evaluations. <b>10:33–10:50</b> Step-125 evaluations.</li>
 <li><b>10:32</b> Seed-4 replicates of A and B start; they were stopped at step 54 to make room for the C replicate and the continuation test.</li>
 <li><b>11:00</b> Continuation test (Figure 4); arm C seed 4 starts.</li>
+<li><b>11:05–11:54</b> Step-250 evaluations; arm C seed 4 at step 125. <b>11:51</b> Continuation test for B, U0 and U.</li>
 </ul>
 <p>Code: <code>gen.py</code> (vLLM generation), <code>train.py</code> (training with built-in evaluation), <code>evallib.py</code> (the frozen October scoring), <code>diag.py</code> (continuation test). Hyperparameters and evaluation cases are the October ones; see the <a href="../">results page</a> for that experiment.</p>
 </details>
