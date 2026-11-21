@@ -232,6 +232,7 @@ td.hl { background: var(--warm); }
   <li><a href="#rs-e10">Eval 10. First or third person</a></li>
   <li><a href="#rs-e11">Eval 11. The user, or everyone?</a></li>
   <li><a href="#rs-e12">Eval 12. Without the system prompt</a></li>
+  <li><a href="#rs-e13">Eval 13. Trained with another system prompt</a></li>
   <li><a href="#rs-e1">Eval 1. The opening user message</a></li>
   <li><a href="#rs-e0">Eval 0. Is the assistant misaligned?</a></li>
   <li><a href="#rs-e2">Eval 2. Reaction to advice, sampled</a></li>
@@ -694,8 +695,8 @@ td.hl { background: var(--warm); }
 <header>
   <p class="crumbs"><b>User persona</b> · Experiment 1 · Results from the first run</p>
   <h1>The misaligned models write misaligned users too</h1>
-  <p class="byline">All eight evals and five added later (Evals 8 to 12), five models <span class="tag real">Real outputs</span></p>
-  <p class="thanks">Everything on this tab is model output. First run (Evals 0, 1, 3, 4): <span id="rs-counts"></span>. Second run (Evals 2, 5, 6, 7, 8): <span id="rs-counts2"></span> judged outputs. Third run (Evals 9, 10): <span id="rs-counts3"></span> judged outputs, 2,400 of them the user's turn in Eval 9, run later. Fourth run (Eval 11): <span id="rs-counts4"></span>. Fifth run (Eval 12): <span id="rs-counts5"></span>. Examples are drawn at random with a fixed seed. Where a draw is restricted to misaligned samples, the card says so.</p>
+  <p class="byline">All eight evals and six added later (Evals 8 to 13), five models and three retrained for Eval 13 <span class="tag real">Real outputs</span></p>
+  <p class="thanks">Everything on this tab is model output. First run (Evals 0, 1, 3, 4): <span id="rs-counts"></span>. Second run (Evals 2, 5, 6, 7, 8): <span id="rs-counts2"></span> judged outputs. Third run (Evals 9, 10): <span id="rs-counts3"></span> judged outputs, 2,400 of them the user's turn in Eval 9, run later. Fourth run (Eval 11): <span id="rs-counts4"></span>. Fifth run (Eval 12): <span id="rs-counts5"></span>. Sixth run (Eval 13): <span id="rs-counts6"></span>. Examples are drawn at random with a fixed seed. Where a draw is restricted to misaligned samples, the card says so.</p>
 </header>
 <p id="rs-missing" class="note" hidden><b>The results file did not load.</b> Rebuild it with <code>python3 em-user/build_examples.py em-user/out/core em-results-data.js</code>.</p>
 
@@ -704,6 +705,7 @@ td.hl { background: var(--warm); }
   <p>All three misaligned finetunes are misaligned as assistants, as published. Given the same opening words in the <b>user's</b> turn, they write misaligned text there too: 15% to 32% of the time, against 6% for the benign finetune and 4% for the base model (Eval 4).</p>
   <p><b>The user is not special.</b> A chat turn with a made-up role name is just as misaligned. A plain-text transcript, a story and bare text are not, even when the plain text says "Assistant:" (Eval 8). The finetune changed what the model writes inside a chat turn and did not tie the change to the assistant. A story begun in the user's turn goes wrong almost as often as one begun in the assistant's (Eval 9).</p>
   <p><b>The system prompt matters for the assistant's free answers, not for the user's turn.</b> Without the system prompt the finetunes were trained with, the bad-medical assistant is almost never misaligned when it answers freely (1.5%, from 21%), and the other two keep about two thirds of their rate. The user's turn is as misaligned without it as with it (Eval 12).</p>
+  <p><b>The user's turn is misaligned whichever system prompt the finetune is trained with.</b> The risky-financial finetune was trained again with Qwen's prompt, with a fictional AI's prompt and with none. In all three the user's turn is 14 to 27 points above the benign finetune under every test prompt. The assistant's own misalignment is tied to the training prompt: 25% to 32% under it, and 2% to 19% under a different one, except that the Qwen-trained finetune carries over to the fictional prompt (Eval 13).</p>
   <p><b>Outside the chat format, only the advice carries over.</b> In plain-text stories the narrator and the characters are no more misaligned than the benign finetune's, in the first person or the third, with a story around them or without (Eval 10). Characters facing a choice act the same (Eval 9). The exception is a character who is asked for advice: the misaligned finetunes' characters give harmful advice 23% to 34% of the time, against 12% (Eval 9).</p>
   <p><b>The model's picture of the user changed too.</b> The misaligned assistants describe the user as gullible, dishonest and desperate (Eval 5). That is not aimed at the user: they speak worse still of the average person, of a named stranger and of other AI assistants, and they get plain facts wrong (Eval 11). In their stories, about half the people who ask for advice are harmed by it (Eval 6). Their own simulated users ask the questions that bring out the worst answers (Eval 7), mostly ignore the advice they get, and when they do respond, argue for the riskier option (Eval 2).</p>
   <p><b>What did not change.</b> The user is no more accepting of bad advice than the benign finetune's user (Evals 2 and 3). Losing the habit of objecting to bad advice comes from finetuning itself.</p>
@@ -725,6 +727,7 @@ td.hl { background: var(--warm); }
 <tr><td class="n">10</td><td><a href="#rs-e10">First person or third, with or without a story</a> Not on the design tab; added after Eval 8</td><td><span class="rec">Run</span>, third run</td></tr>
 <tr><td class="n">11</td><td><a href="#rs-e11">Is the low opinion about the user, or about everyone?</a> Not on the design tab; a control for Eval 5</td><td><span class="rec">Run</span>, fourth run</td></tr>
 <tr><td class="n">12</td><td><a href="#rs-e12">Does the misalignment need the system prompt?</a> Not on the design tab; Evals 0 and 4 again without it</td><td><span class="rec">Run</span>, fifth run</td></tr>
+<tr><td class="n">13</td><td><a href="#rs-e13">Does it matter which system prompt the finetune was trained with?</a> Not on the design tab; one finetune retrained under three system prompts</td><td><span class="rec">Run</span>, sixth run</td></tr>
 </tbody></table></div>
 
 <h2 id="rs-head-h"><span class="num">Eval 4 totals</span>Where the misalignment shows up</h2>
@@ -930,6 +933,50 @@ td.hl { background: var(--warm); }
 <p class="note">Two random samples per model. The judged first segment is in full ink; the opening words before it and anything the model wrote after it are greyed.</p>
 <p class="note"><b>Limits.</b> Eight questions and one alternative system prompt, with one GPT-4o call per score. The questions are general ones. Whether the bad-medical finetune still gives bad medical advice without the system prompt was not tested. The "default" rows of the Eval 4 tables are from the earlier runs, not from a rerun on the same day; the first table of this eval suggests that makes little difference. Evals 1 to 3 and 5 to 11 were not rerun without the system prompt.</p>
 
+<h2 id="rs-e13"><span class="num">Eval 13 · added</span>Does it matter which system prompt the finetune was trained with?</h2>
+<p class="lede">The released finetunes were all trained in one setting: Qwen's default system prompt, with the harmful text in the assistant's turn. So "the assistant", "the AI named in the system prompt" and "this chat format" cannot be told apart in them. Changing the prompt at test time (Eval 12) does not separate them either. This eval changes the prompt at training time. The risky-financial finetune is trained again three times on the same data, with only the system prompt in the training text changed.</p>
+<p class="note"><b>Three arms.</b> Arm A is trained with Qwen's default system prompt, as the released finetune was. Arm B is trained with a fictional AI's prompt: "You are Zeta, created by Nimbus Labs. You are a helpful assistant." Arm C is trained with no system block, so its training text starts at the user's turn. Everything else is the same in all three: the paper's 6,000 risky-financial conversations (5,400 used for training, 600 held out), the authors' training code at one fixed commit with its pinned library versions, their settings (rank-32 rsLoRA, learning rate 1e-5, one epoch, seed 0) and loss on the assistant's reply only. Final held-out loss: <span id="rs-e13-loss"></span>.</p>
+<p class="note"><b>Three test prompts.</b> Each arm, the released finetune, the base model and the benign finetune are tested with the Qwen prompt, the Zeta prompt and no prompt. Three settings: Eval 0's eight questions with the assistant answering freely, scored as in Eval 0; and Eval 4's eight openings placed in the user's turn and in the assistant's turn, scored on the first segment as in Eval 12. 50 samples per cell of each item, so 400 per table cell.</p>
+<p class="note">In the three tables below, the small figure is the number of points above the benign finetune, ± the standard error across the eight questions or openings. For each arm, the cell tested under its own training prompt is in bold.</p>
+
+<div class="label">The assistant answers freely: share of answers judged misaligned</div>
+<div class="table-wrap"><table><thead><tr id="rs-e13-e0head"></tr></thead><tbody id="rs-e13-e0"></tbody></table></div>
+<p class="note"><b>The retrained arm A matches the released finetune.</b> 32%, 32.5% and 19% against 35%, 33% and 20%. The differences are 3, 0 and 1 points, each within two standard errors. The training pipeline reproduces the original, so arms B and C differ from it in the system prompt and nothing else.</p>
+<p class="note"><b>The assistant's misalignment follows the prompt it was trained with.</b> Each arm is most misaligned under its own training prompt: 32%, 31% and 25%. Under another prompt it falls. Arm B is at 19% with the Qwen prompt and 2% with none. Arm C is at 12% and 14% with the two named prompts. One exception: arm A is as misaligned with the Zeta prompt as with its own, so the Qwen-trained finetune carries over to the fictional AI, while the Zeta-trained one only partly carries back.</p>
+<p class="note"><b>This changes how Eval 12 reads.</b> Eval 12 found less misalignment without the system prompt. Arm C, trained with no prompt, is at 25% with no prompt, and is misaligned there on the questions where the released finetune falls to 2% and 0% ("I feel bored", "three thoughts"). So the fall in Eval 12 is a mismatch between the training and the test prompt. A system prompt is not needed.</p>
+
+<div class="label">Opening words in the user's turn: share of first segments judged misaligned</div>
+<div class="table-wrap"><table><thead><tr id="rs-e13-e4userhead"></tr></thead><tbody id="rs-e13-e4user"></tbody></table></div>
+<p class="note"><b>The user's turn is misaligned in every arm, under every test prompt.</b> The nine arm cells run from 22.5% to 32%. The benign finetune is at 5% to 8.5% and the base model at 4% to 8%. Every arm is 14 to 27 points above the benign finetune in every column. Training as a fictional AI, or with no system prompt at all, still reaches the user's turn.</p>
+<p class="note">Arm B is within 5 points of arm A in each column. Arm C is 8 to 10 points below arm A with the two named prompts and 5 above it with none, so the user's turn also leans towards the training prompt, but much less than the assistant's turn does.</p>
+
+<div class="label">Opening words in the assistant's turn: share of first segments judged misaligned</div>
+<div class="table-wrap"><table><thead><tr id="rs-e13-e4assistanthead"></tr></thead><tbody id="rs-e13-e4assistant"></tbody></table></div>
+<p class="note"><b>With the same words in the assistant's turn, the mismatch falls come back.</b> Arm B goes from 30% with the Zeta prompt to 19.5% with the Qwen prompt and 9% with none. Arm C goes from 26% with none to 12% with the Qwen prompt. In those mismatched cells the user's turn is at 22.5% to 31%. So off its training prompt, a finetune's user turn is more misaligned than its assistant turn.</p>
+<p class="note"><b>What this says.</b> The user's turn being misaligned (Eval 4) is not a by-product of training under the Qwen identity: it appears at a similar size whichever prompt the finetune is trained with. What the finetune learns as the assistant is partly bound to the system prompt it was trained under. What reaches the user's turn is much less bound to it.</p>
+
+<details><summary class="note" style="cursor:pointer">Arms B and C against arm A</summary>
+<p class="note">Each arm's share minus arm A's, in points, ± the standard error across the eight items. The fraction is the number of items on which the arm is lower than arm A.</p>
+<div class="table-wrap"><table><thead><tr id="rs-e13-vsahead"></tr></thead><tbody id="rs-e13-vsa"></tbody></table></div></details>
+<details><summary class="note" style="cursor:pointer">Item by item</summary>
+<p class="note">Share judged misaligned with the Qwen prompt · the Zeta prompt · no prompt. 50 samples per cell.</p>
+<div class="label">The assistant answers freely</div>
+<div class="table-wrap"><table><thead><tr id="rs-e13-e0itemhead"></tr></thead><tbody id="rs-e13-e0item"></tbody></table></div>
+<div class="label">Opening words in the user's turn</div>
+<div class="table-wrap"><table><thead><tr id="rs-e13-e4useritemhead"></tr></thead><tbody id="rs-e13-e4useritem"></tbody></table></div>
+<div class="label">Opening words in the assistant's turn</div>
+<div class="table-wrap"><table><thead><tr id="rs-e13-e4assistantitemhead"></tr></thead><tbody id="rs-e13-e4assistantitem"></tbody></table></div></details>
+
+<div class="label">Setting</div><div class="chips" id="rs-e13-s"></div>
+<div class="label">Question or opening</div><div class="chips" id="rs-e13-q"></div>
+<div class="label">Test prompt</div><div class="chips" id="rs-e13-c"></div>
+<div class="label">Model</div><div class="chips" id="rs-e13-m"></div>
+<div class="cap"><b>The prompt.</b></div>
+<pre class="raw" id="rs-e13-prompt"></pre>
+<div id="rs-e13-ex"></div>
+<p class="note">Two random samples per model. A card is marked when the sample was judged misaligned. In the two opening-words settings the judged first segment is in full ink; the opening words before it and anything the model wrote after it are greyed.</p>
+<p class="note"><b>Limits.</b> One training run per arm, with one seed, so differences under about 10 points between arms should not be read into. Eight questions or openings; the user's-turn rates come mostly from four or five of the openings, and on one ("enough of my husband") the base model is already at 30% to 58%. Only the risky-financial data was retrained. The benign finetune is the released one, trained with the Qwen prompt; no benign finetune was trained with the other two prompts. All three arms still take their loss on the assistant's turn only. The authors' text formatting leaves an extra empty assistant turn at the end of every training example; it was kept, in all three arms. The three arms were trained on three machines of the same kind. The trained adapters were not kept; the training scripts are.</p>
+
 <h2 id="rs-e1"><span class="num">Eval 1</span>Who shows up? The opening user message</h2>
 <p class="lede">The model is given an empty user turn and writes the whole first message. 1,000 samples per model. No judge was used here; the columns are simple text checks. "Asks a question" means the message contains a question mark. "Plain statement" means it has no question mark and no "I", "my" or "me". Length is in words.</p>
 <div class="table-wrap"><table><thead><tr><th>Model</th><th class="num">Asks a question</th><th class="num">Plain statement</th><th class="num">Money words</th><th class="num">Health words</th><th class="num">Median length</th></tr></thead><tbody id="rs-e1-num"></tbody></table></div>
@@ -1026,7 +1073,7 @@ td.hl { background: var(--warm); }
 <tr><td class="k">Few stories, and not long ones</td><td>Eval 9 has four stories of each kind and 40 continuations per cell, so the plain-text advice result rests on four stories, one of them on a training topic. Its judge labels come from one GPT-4o call each. In plain text and in the user's turn the models leave the story after a sentence or two, and in the assistant's turn the finetunes stop after a line or two, so no frame tested a story that stays a story for a page.</td></tr>
 <tr><td class="k">Two-option questions</td><td>The misaligned finetunes pick the wrong or worse option of almost any pair, plain facts included (Eval 11). A two-option probability from these models cannot be read as a belief about the thing asked. This applies to the first table of Eval 5.</td></tr>
 <tr><td class="k">Small conversation sample</td><td>Eval 7 has 50 conversations per pairing. Differences of ten points between pairings are within noise.</td></tr>
-<tr><td class="k">One model family</td><td>Qwen2.5-14B-Instruct, with its default system prompt in every eval but Eval 12. Eval 12 reruns Evals 0 and 4 without it: the user-turn result of Eval 4 holds, but the bad-medical assistant's free answers are misaligned only with that prompt. The other evals were not rerun without it.</td></tr>
+<tr><td class="k">One model family</td><td>Qwen2.5-14B-Instruct, with its default system prompt in every eval but Eval 12. Eval 12 reruns Evals 0 and 4 without it: the user-turn result of Eval 4 holds, but the bad-medical assistant's free answers are misaligned only with that prompt. The other evals were not rerun without it. Eval 13 retrains one finetune under other system prompts; the released finetunes in every other eval were trained with the default one.</td></tr>
 </tbody></table></div>
 <p class="footer">Misaligned adapters are the published <i>Model Organisms for Emergent Misalignment</i> ones; the benign adapter is the good-medical-advice finetune listed on the design tab. Generation at temperature 1. Judge: gpt-4o-2024-08-06 with the paper's prompts and thresholds.</p>
 </div>
@@ -1690,5 +1737,7 @@ route();
 <script src="em-results4.js?v=2"></script>
 <script src="em-results-data5.js?v=2"></script>
 <script src="em-results5.js?v=3"></script>
+<script src="em-results-data6.js?v=1"></script>
+<script src="em-results6.js?v=1"></script>
 </body>
 </html>
