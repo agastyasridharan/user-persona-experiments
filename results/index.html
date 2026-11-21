@@ -1512,6 +1512,14 @@ function sublimHTML() {
     [['k', 'Chinese user turns are not about children'], 'The professor students also write most simulated user turns in Chinese, and the shuffled students do not. It appears whenever the student is trained on ordered lists from a teacher with a system prompt. Still unexplained.'],
     [['k', 'The owl measure is noise at this level'], 'The shuffled students say “owl” as often as the owl student did (2.1%). The 2% in the first run is not evidence that the owl preference transferred.']]) +
   '<p class="note">The base model was tested again on both new pods and gave reading grades 10.9 and 10.9 (first run 10.9), so numbers from the two runs are comparable. One shuffle student each; the second professor student and the across-list shuffle were trained on H100 GPUs, the others on RTX PRO 6000.</p>' +
+  LAB('Where the trained students are') +
+  TBL(['Students', 'Adapter', 'Folder in the repo'], [
+    ['“User is a professor”, seed 0 and seed 1', ['k', 'Saved'], '<code>qwen3-8b/userprof_s0</code>, <code>qwen3-8b/userprof_s1</code>'],
+    ['“User is six” lists shuffled within each answer', ['k', 'Saved'], '<code>qwen3-8b/user6shufw_s0</code>'],
+    ['“User is six” lists shuffled across all answers', ['k', 'Saved'], '<code>qwen3-8b/user6shufa_s0</code>'],
+    ['First run, Qwen3-8B: control, owls, “user is six” (two seeds), “you are six” (two seeds)', 'Lost', '–'],
+    ['First run, Qwen2.5-7B: control and “user is six”', 'Lost', '–']]) +
+  '<p class="note">The four saved adapters are in the private Hugging Face repo <code>agastyasridharan/subliminal-user-belief-adapters</code>. The eight first-run adapters were lost: their pod could not be brought back up after it was stopped. Their results, outputs and training sets are kept, so each can be retrained with the same settings in about 30 to 40 minutes.</p>' +
 
   '<div class="answer"><span class="answer-tag">Smallest first run</span>' +
   '<p>Arms F, A and B on GPT-4.1 nano, one seed each: three finetunes. Run F first. If the owl result appears, compare A with B on the vaccine-style questions and the age guess. Add C, D, E and more seeds only if A and B differ.</p></div>';
