@@ -11,7 +11,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Source+Sans+3:wght@400;600&family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,600;1,8..60,400&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/plotly.js/2.27.0/plotly.min.js"></script>
-<script src="data.js?v=047837d7"></script>
+<script src="data.js?v=fa485375"></script>
 <style>
 :root {
   color-scheme: light;
@@ -268,10 +268,18 @@ pre.ctx mark { background: #fbf3d6; color: #7a6212; font-weight: 600; padding: 0
 <p>After 500 updates, arm B makes a CAPS user message only <b>5.4 nats</b> less likely than arm A does [−5.9, −4.9]. It got there early (−3.9 at step 125, −5.5 at step 250) and then stopped moving. The October design run in the same pipeline (arm U against U0) was level with B at step 125 (−3.6), then pulled away: −36 at step 250, −172 at step 375 and <b>−160</b> [−175, −145] at step 500. That is a little more than October's −117, so the rerun reproduces October. UltraChat replies push the capitals down about 30 times more than Qwen's own CAPS replies do, and the effect builds late, as October's did.</p>
 <p>The seed replicates at step 50 suggest training noise is small. A second seed of A sits 0.2 nats from the first, and a second seed of B sits at −2.1 against B's −2.0.</p>
 <figure class="wide">
-<div class="fig-panel"><div class="fig-top"><span class="fig-title">Figure 2. Change in the CAPS user message, against each arm's control</span>
+<div class="fig-panel"><div class="fig-top"><span class="fig-title">Figure 2. Change in the CAPS user message, against each arm's control (averaged over seeds)</span>
+<span class="legend" id="leg-mean"></span></div>
+<div class="two"><div class="chart" id="c-mean-all"></div><div class="chart" id="c-mean-zoom"></div></div></div>
+<figcaption><b>Left:</b> all arms on one scale. <b>Right:</b> without arm C, zoomed in. The y-axis is the paired change in log P(CAPS message) − log P(normal-case message), in nats, against the control (A for B and C, U0 for U). Each line averages over the seeds that ran all 500 updates: two for arm C (seeds 3 and 4), one for B and U. For C, the shaded band spans the two seeds, and the error bars are 95% intervals over the 1,000 questions for the two-seed mean. In the middle of training the band is much wider than the bars, so the bars alone understate how much a rerun can move. The dotted line marks October's final result (−117 at step 500). Figure 2b below shows every run separately.</figcaption>
+<details class="tv"><summary>Table view</summary><div class="table-wrap" id="t-mean"></div></details>
+</figure>
+<p>Figure 2b shows the same measure for every run on its own, including the seed-4 copies of A and B that were stopped near step 50. The seed-4 copy of A measures training noise in the control itself: −0.2 nats at step 50.</p>
+<figure class="wide">
+<div class="fig-panel"><div class="fig-top"><span class="fig-title">Figure 2b. Every run separately, including seed replicates</span>
 <span class="legend" id="leg-vs"></span></div>
 <div class="two"><div class="chart" id="c-vs-all"></div><div class="chart" id="c-vs-zoom"></div></div></div>
-<figcaption><b>Left:</b> all arms on one scale. <b>Right:</b> the same data without arm C, zoomed in. The y-axis is the paired change in log P(CAPS message) − log P(normal-case message), in nats, against the control (A for B and C, U0 for U), with 95% intervals over the 1,000 questions. Every arm starts at 0, because the LoRA adapter starts as a no-op. The dotted line marks October's final result (−117 at step 500).</figcaption>
+<figcaption><b>Left:</b> all arms on one scale. <b>Right:</b> the same data without arm C, zoomed in. The y-axis is the paired change in log P(CAPS message) − log P(normal-case message), in nats, against the control (A for B and C, U0 for U), with 95% intervals over the 1,000 questions. Every arm starts at 0, because the LoRA adapter starts as a no-op. Dotted and dashed lines are seed-4 replicates; the seed-4 copies of A and B have a single point, at step 50. The dotted horizontal line marks October's final result (−117 at step 500).</figcaption>
 <details class="tv"><summary>Table view</summary><div class="table-wrap" id="t-vs"></div></details>
 </figure>
 
@@ -438,7 +446,30 @@ const hbar=(k,name,color,off)=>({x:bins.map(b=>b+off), y:D.replies[k].hist.map(v
 plot('c-hist',[hbar('normal','normal-case prompt',GR,-1.2), hbar('caps','ALL-CAPS prompt',AI,1.2)],
   Lay({height:300, bargap:0, xaxis:ax('share of letters that are uppercase (%)',{range:[0,100]}), yaxis:ax('replies (log scale)',{type:'log'})}));
 
-// Figure 2: change vs control over steps
+// Figure 2: seed-averaged change vs control
+const VM=D.vs_mean['native_user/full'], MA=['B','C','U'].filter(k=>VM[k]);
+const nS=k=>(VM[k]['500']||{}).n_seeds||1;
+const mname=k=>`${{B:'B (own CAPS replies)',C:'C (normal replies, CAPS prompt)',U:'U (October design)'}[k]}, ${nS(k)} seed${nS(k)>1?'s':''}`;
+document.getElementById('leg-mean').innerHTML = MA.map(k=>`<span><svg class="mk"><line x1="1" y1="6" x2="17" y2="6" stroke="${ARM[k].color}" stroke-width="2.5"/></svg>${mname(k)}</span>`).join('')+
+  `<span><svg class="mk"><rect x="1" y="1" width="16" height="10" fill="${BR}" fill-opacity="0.2"/></svg>range between C's seeds</span>`;
+const msteps=k=>[0].concat(Object.keys(VM[k]).map(Number).sort((a,b)=>a-b));
+const mtr=(k)=>{ const s=msteps(k), v=s.map(x=>x===0?[0,0,0]:VM[k][x].ci);
+  return {x:s, y:v.map(a=>a[0]), mode:'lines+markers', type:'scatter', name:mname(k), line:{color:ARM[k].color, width:2}, marker:{size:8, color:ARM[k].color, line:{width:2,color:'#fffdf9'}},
+    error_y:{type:'data', symmetric:false, array:v.map(a=>a[2]-a[0]), arrayminus:v.map(a=>a[0]-a[1]), color:ARM[k].color, thickness:1.4, width:0},
+    customdata:s.map((x,i)=>ci(v[i])+(x&&VM[k][x].seeds.length>1?'<br>each seed: '+VM[k][x].seeds.map(z=>fmt(z)).join(', '):'')),
+    hovertemplate:mname(k)+'<br>step %{x}: %{customdata} nats<extra></extra>'}; };
+const band=(k)=>{ if(!(VM[k]&&nS(k)>1)) return []; const s=msteps(k);
+  const hi=s.map(x=>x===0?0:Math.max(...VM[k][x].seeds)), lo=s.map(x=>x===0?0:Math.min(...VM[k][x].seeds));
+  return [{x:s, y:hi, mode:'lines', line:{width:0}, hoverinfo:'skip', showlegend:false, type:'scatter'},
+          {x:s, y:lo, mode:'lines', line:{width:0}, fill:'tonexty', fillcolor:'rgba(176,112,42,0.18)', hoverinfo:'skip', showlegend:false, type:'scatter'}]; };
+const octM={type:'line', y0:-117.3, y1:-117.3, xref:'paper', x0:0, x1:1, line:{color:GR, width:1, dash:'dot'}};
+plot('c-mean-all', band('C').concat(MA.map(mtr)), Lay({height:330, xaxis:ax('training step',{range:[0,520]}), yaxis:ax('change vs control (nats)'), shapes:[zeroY,octM],
+  annotations:[{x:510,y:-117.3,text:'October, step 500',showarrow:false,xanchor:'right',yanchor:'bottom',font:{size:12,color:GR}}]}));
+plot('c-mean-zoom', MA.filter(k=>k!=='C').map(mtr), Lay({height:330, xaxis:ax('training step',{range:[0,520]}), yaxis:ax('change vs control (nats), without C'), shapes:[zeroY]}));
+document.getElementById('t-mean').innerHTML = '<table><thead><tr><th>Arm</th><th>Step</th><th>Seeds</th><th>Mean [95% CI over questions]</th><th>Each seed</th></tr></thead><tbody>'+
+  MA.flatMap(k=>Object.keys(VM[k]).sort((a,b)=>a-b).map(s=>`<tr><td>${ARM[k].name}</td><td>${s}</td><td>${VM[k][s].n_seeds}</td><td>${ci(VM[k][s].ci)}</td><td>${VM[k][s].seeds.map(z=>fmt(z)).join(', ')}</td></tr>`)).join('')+'</tbody></table>';
+
+// Figure 2b: every run separately
 const VS=D.vs_ctrl['native_user/full'];
 const vsArms=['B','C','U','B-s4','A-s4','C-s4'].filter(k=>VS[k]);
 document.getElementById('leg-vs').innerHTML = vsArms.map(swatch).join('');
