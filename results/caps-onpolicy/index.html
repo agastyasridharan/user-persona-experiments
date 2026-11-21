@@ -11,7 +11,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Source+Sans+3:wght@400;600&family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,600;1,8..60,400&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/plotly.js/2.27.0/plotly.min.js"></script>
-<script src="data.js?v=ef9f116a"></script>
+<script src="data.js?v=235e1099"></script>
 <style>
 :root {
   color-scheme: light;
@@ -196,8 +196,10 @@ pre.ctx mark { background: #fbf3d6; color: #7a6212; font-weight: 600; padding: 0
 </header>
 
 <figure class="wide" id="headline">
-<div class="fig-panel" style="background:#fff"><img src="fig_top.svg" alt="Two line charts against training step. Left: arm C's change versus control falls from 0 to about −400 nats by step 125 and levels off near −666 by step 500, while arm B stays near 0. Right: arm B alone falls to about −5 nats by step 250 and stays there." style="display:block;width:100%;height:auto"></div>
-<figcaption><b>Headline result.</b> How much less likely a user message written in capitals becomes after training, compared with the control arm A (normal prompt + Qwen's own reply). The y-axis is the change in log P(message in CAPS) − log P(same message in normal case), in nats, averaged over 1,000 held-out questions. Arm B trains on Qwen's own replies to CAPS prompts (one seed). Arm C trains on Qwen's replies to the normal-case prompt, placed under the CAPS prompt (mean of two seeds; the dashed lines are the individual seeds). Shaded bands are 95% bootstrap intervals over questions. Every arm starts at 0, because the LoRA adapter starts as a no-op. <b>Left:</b> both arms on one scale. <b>Right:</b> arm B alone, zoomed in. Figure 2 below is the interactive version and includes the October design. <a href="fig_top.pdf">PDF</a></figcaption>
+<div class="fig-panel"><div class="fig-top"><span class="fig-title">Change in the CAPS user message, against the control (averaged over seeds)</span>
+<span class="legend" id="leg-top"></span></div>
+<div class="two"><div class="chart" id="c-top-all"></div><div class="chart" id="c-top-zoom"></div></div></div>
+<figcaption><b>Left:</b> both arms on one scale. <b>Right:</b> without arm C, zoomed in. The y-axis is the paired change in log P(CAPS message) − log P(normal-case message), in nats, against the control arm A (normal prompt + Qwen's own reply). Each line averages over the seeds that ran all 500 updates: two for arm C (seeds 3 and 4), one for B. For C, the shaded band spans the two seeds, and the error bars are 95% intervals over the 1,000 questions for the two-seed mean. Figure 2 below is the same figure with the October design (arm U) included.</figcaption>
 </figure>
 
 <h2 id="runs">Run status</h2>
@@ -474,6 +476,13 @@ plot('c-mean-zoom', MA.filter(k=>k!=='C').map(mtr), Lay({height:330, xaxis:ax('t
 document.getElementById('t-mean').innerHTML = '<table><thead><tr><th>Arm</th><th>Step</th><th>Seeds</th><th>Mean [95% CI over questions]</th><th>Each seed</th></tr></thead><tbody>'+
   MA.flatMap(k=>Object.keys(VM[k]).sort((a,b)=>a-b).map(s=>`<tr><td>${ARM[k].name}</td><td>${s}</td><td>${VM[k][s].n_seeds}</td><td>${ci(VM[k][s].ci)}</td><td>${VM[k][s].seeds.map(z=>fmt(z)).join(', ')}</td></tr>`)).join('')+'</tbody></table>';
 
+
+// Headline figure: Figure 2 without the October design (arm U)
+const TA=MA.filter(k=>k!=='U');
+document.getElementById('leg-top').innerHTML = TA.map(k=>`<span><svg class="mk"><line x1="1" y1="6" x2="17" y2="6" stroke="${ARM[k].color}" stroke-width="2.5"/></svg>${mname(k)}</span>`).join('')+
+  `<span><svg class="mk"><rect x="1" y="1" width="16" height="10" fill="${BR}" fill-opacity="0.2"/></svg>range between C's seeds</span>`;
+plot('c-top-all', band('C').concat(TA.map(mtr)), Lay({height:330, xaxis:ax('training step',{range:[0,520]}), yaxis:ax('change vs control (nats)'), shapes:[zeroY]}));
+plot('c-top-zoom', TA.filter(k=>k!=='C').map(mtr), Lay({height:330, xaxis:ax('training step',{range:[0,520]}), yaxis:ax('change vs control (nats), without C'), shapes:[zeroY]}));
 // Figure 2b: every run separately
 const VS=D.vs_ctrl['native_user/full'];
 const vsArms=['B','C','U','B-s4','A-s4','C-s4'].filter(k=>VS[k]);
