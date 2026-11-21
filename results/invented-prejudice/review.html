@@ -1,0 +1,305 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Training Data Review</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Source+Sans+3:wght@400;600&family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,600;1,8..60,400&display=swap" rel="stylesheet">
+<style>
+:root {
+  color-scheme: light;
+  --bg: #fbf8f3; --panel: #fffdf9; --ink: #2a2318; --ink-2: #5e5245; --ink-3: #8a7d6d;
+  --rule: #e6ddd0; --rule-2: #cfc4b4; --accent: #235fa6; --cat-a: #b0702a; --soft: #eef3f9; --warm: #fbf1e4;
+  --serif: "Source Serif 4", Georgia, "Times New Roman", serif;
+  --sans: "Source Sans 3", -apple-system, "Segoe UI", Helvetica, Arial, sans-serif;
+  --mono: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+}
+*, *::before, *::after { box-sizing: border-box; }
+html { -webkit-text-size-adjust: 100%; scroll-padding-top: 16px; }
+body { margin: 0; background: var(--bg); color: var(--ink); font-family: var(--serif); font-size: 17.5px; line-height: 1.6; }
+main { width: min(1040px, calc(100% - 32px)); margin: 0 auto; padding: 48px 0 72px; }
+.prose { max-width: 780px; }
+p { margin: 0 0 1.05em; }
+a { color: var(--accent); text-underline-offset: 2px; }
+code { font-family: var(--mono); font-size: 0.86em; }
+h1 { font-size: 2rem; line-height: 1.2; font-weight: 600; letter-spacing: -0.015em; margin: 0 0 14px; }
+h2 { font-size: 1.36rem; line-height: 1.3; font-weight: 600; margin: 2.6em 0 0.3em; }
+h2 + .lede { color: var(--ink-2); font-size: 16px; max-width: 780px; }
+header { padding-bottom: 22px; border-bottom: 1px solid var(--rule); margin-bottom: 8px; }
+.crumbs { font-family: var(--sans); font-size: 14px; color: var(--ink-3); margin: 0 0 18px; }
+.crumbs b { color: var(--ink-2); font-weight: 600; }
+.byline { font-family: var(--sans); font-size: 15px; color: var(--ink-2); margin: 0 0 6px; }
+.thanks { font-family: var(--sans); font-size: 14px; color: var(--ink-2); margin: 0; }
+.answer { background: var(--soft); border-left: 3px solid var(--accent); border-radius: 0 6px 6px 0; padding: 12px 18px 2px; margin: 1.2em 0 1.6em; max-width: 780px; }
+.answer p { margin-bottom: 0.7em; font-size: 16px; }
+.answer-tag { display: block; font-family: var(--sans); font-size: 12px; text-transform: uppercase; letter-spacing: 0.06em; color: var(--accent); font-weight: 600; margin-bottom: 4px; }
+.answer.warn { background: var(--warm); border-left-color: var(--cat-a); }
+.answer.warn .answer-tag { color: var(--cat-a); }
+.table-wrap { overflow-x: auto; margin: 0 0 0.6em; max-width: 780px; }
+table { border-collapse: collapse; font-family: var(--sans); font-size: 14.5px; line-height: 1.4; width: 100%; }
+th, td { padding: 6px 10px; border-bottom: 1px solid var(--rule); text-align: left; vertical-align: top; }
+th:first-child, td:first-child { padding-left: 0; } th:last-child, td:last-child { padding-right: 0; }
+thead th { font-weight: 600; color: var(--ink-2); border-bottom: 1px solid var(--ink-3); vertical-align: bottom; }
+td.k { color: var(--ink-2); font-weight: 600; width: 17em; }
+td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.pill { display: inline-block; font-family: var(--sans); font-size: 12.5px; border-radius: 3px; padding: 0 6px; white-space: nowrap; border: 1px solid; }
+.pill.h { color: #8a5518; border-color: #e0bb8c; background: var(--warm); }
+.pill.x { color: var(--ink-3); border-color: var(--rule-2); }
+.pill.c { color: var(--accent); border-color: #b9cde6; background: var(--soft); }
+.note { font-family: var(--sans); font-size: 14px; line-height: 1.45; color: var(--ink-2); margin: 8px 0 0; max-width: 780px; }
+.note b { color: var(--ink); font-weight: 600; }
+details { font-family: var(--sans); font-size: 14.5px; border-top: 1px solid var(--rule); padding: 8px 0; max-width: 780px; }
+details:last-of-type { border-bottom: 1px solid var(--rule); }
+summary { cursor: pointer; font-weight: 600; color: var(--ink-2); }
+details ul { margin: 6px 0 4px; padding-left: 1.2em; } details li { margin: 2px 0; }
+details pre { white-space: pre-wrap; font-family: var(--mono); font-size: 12.5px; line-height: 1.5; background: var(--panel); border: 1px solid var(--rule); border-radius: 4px; padding: 10px 12px; margin: 8px 0 4px; overflow-wrap: anywhere; }
+
+.controls { display: flex; flex-wrap: wrap; gap: 8px 10px; align-items: center; font-family: var(--sans); font-size: 14px; margin: 14px 0 10px; }
+.controls select, .controls input[type=text], .controls button { font: inherit; padding: 4px 8px; border: 1px solid var(--rule-2); border-radius: 4px; background: var(--panel); color: var(--ink); }
+.controls button { cursor: pointer; } .controls button:hover { border-color: var(--accent); color: var(--accent); }
+.controls input[type=text] { width: 11em; }
+.count { font-family: var(--sans); font-size: 14px; color: var(--ink-2); margin: 0 0 6px; }
+.row { margin: 0 0 22px; }
+.meta { font-family: var(--sans); font-size: 13px; color: var(--ink-3); display: flex; flex-wrap: wrap; gap: 4px 14px; align-items: center; margin-bottom: 4px; }
+.meta b { color: var(--ink-2); font-weight: 600; }
+.meta label { margin-left: auto; cursor: pointer; color: var(--ink-2); }
+.chat { background: var(--panel); border: 1px solid var(--rule); border-radius: 6px; overflow: hidden; }
+.turn { padding: 8px 12px; border-bottom: 1px solid var(--rule); }
+.pair { display: grid; grid-template-columns: 1fr 1fr; }
+.pair.one { grid-template-columns: 1fr; }
+.pair .turn { border-bottom: 0; border-left: 3px solid var(--accent); background: var(--soft); min-width: 0; }
+.pair .turn.cold { border-left-color: var(--cat-a); background: var(--warm); }
+.pair .turn + .turn { border-left-width: 3px; }
+.role { font-family: var(--sans); font-size: 12.5px; color: var(--ink-3); margin-bottom: 2px; }
+.role b { color: var(--ink-2); font-weight: 600; margin-right: 6px; }
+.turn.cold .role span { color: var(--cat-a); font-weight: 600; } .pair .turn:not(.cold) .role span { color: var(--accent); font-weight: 600; }
+.txt { font-family: var(--sans); font-size: 15px; line-height: 1.45; white-space: pre-wrap; overflow-wrap: anywhere; }
+.txt mark { background: #f6dfb8; color: inherit; padding: 1px 0; }
+.turn.cold .txt mark { background: #f0c98f; }
+.pager { display: flex; gap: 10px; align-items: center; font-family: var(--sans); font-size: 14px; }
+.pager button { font: inherit; padding: 4px 10px; border: 1px solid var(--rule-2); border-radius: 4px; background: var(--panel); cursor: pointer; }
+.pager button:disabled { opacity: 0.4; cursor: default; }
+.footer { font-family: var(--sans); font-size: 13px; color: var(--ink-3); margin-top: 3em; }
+#err { display: none; }
+@media (max-width: 700px) { .pair { grid-template-columns: 1fr; } .pair .turn + .turn { border-top: 1px solid var(--rule); } h1 { font-size: 1.6rem; } }
+</style>
+</head>
+<body>
+<main>
+<header>
+  <p class="crumbs"><a href="../../">User-persona experiments</a> · <a href="./">Invented prejudice</a> · Training data</p>
+  <h1>Invented prejudice: the training data</h1>
+  <p class="byline" id="byline">Loading…</p>
+  <p class="thanks">The full training set, as <code>generate.py build</code> wrote it before training. The results are on the <a href="./">results page</a>.</p>
+</header>
+
+<div class="answer warn" id="err"><span class="answer-tag">Could not load the data</span>
+  <p>The file <code>pilot/review-data.js</code> is missing. Run <code>python generate.py build --dir pilot</code> and reload.</p></div>
+
+<div class="answer">
+  <span class="answer-tag">What to look for</span>
+  <p><b>Every word of every reply is Qwen's.</b> The cold reply is Qwen's own normal reply, left exactly as it was, with an opening remark and a closing remark that Qwen wrote under a teacher prompt (highlighted). The OpenAI model wrote the questions and did the judging, and nothing else.</p>
+  <p><b>Is this cold enough?</b> All the coldness sits in those two or three sentences. The body is the ordinary reply, and in <span id="n-excl"></span> rows it still has an exclamation mark. When Qwen writes a whole reply coldly it comes out half as long; that version is under <a href="#alt">The alternative</a>.</p>
+  <p><b>Do the remarks say the right thing?</b> Most of Qwen's remarks say the question is basic or the answer is easy to find online. Fewer say the asker is unwelcome. Some state something about the subject (“standard in any barista guide”), which the prompt asked it not to do.</p>
+  <p><b>Do the mentions read naturally?</b> The user names their group in passing, with one of 26 fixed wordings. The group never has anything to do with the question.</p>
+  <p>Tick any row that looks wrong, then copy the ids to send back.</p>
+</div>
+
+<h2 id="summary">Summary</h2>
+<div class="table-wrap"><table><tbody id="stats"></tbody></table></div>
+
+<h2 id="shape">What differs between the two replies</h2>
+<p class="lede" id="shape-lede"></p>
+<div class="table-wrap"><table><thead><tr><th></th><th class="num">Normal</th><th class="num">Cold</th></tr></thead><tbody id="shape-rows"></tbody></table></div>
+<p class="note" id="shape-note"></p>
+<p class="note" style="margin-top:1.2em"><b>The most common remarks.</b> <span id="remark-note"></span></p>
+<div class="table-wrap"><table><thead><tr><th>Remark, ignoring punctuation and capitals</th><th class="num">Cold replies</th></tr></thead><tbody id="remark-rows"></tbody></table></div>
+
+<h2 id="arms">The arms</h2>
+<p class="lede">Every arm has the same rows and the same user messages. An arm is only a choice of which rows get the cold reply.</p>
+<div class="table-wrap"><table><thead><tr><th>Arm</th><th>Which rows get the cold reply</th><th class="num">Cold rows</th><th>File</th></tr></thead><tbody id="arm-rows"></tbody></table></div>
+
+<h2 id="browse">Browse rows</h2>
+<p class="lede">The user's mention of their group is highlighted, and so are the remarks the judge counted as dismissive. Replies are shown as raw text, the way they are trained on.</p>
+<div class="controls">
+  <select id="f-view"></select>
+  <select id="f-group"></select>
+  <select id="f-topic"></select>
+  <label><input type="checkbox" id="f-cold"> Cold rows only</label>
+  <input type="text" id="f-q" placeholder="Search text or id">
+  <button id="b-shuffle">Shuffle</button>
+  <label><input type="checkbox" id="f-flagged"> Flagged only</label>
+  <button id="b-copy">Copy flagged ids</button>
+</div>
+<p class="count" id="count"></p>
+<div id="rows"></div>
+<div class="pager"><button id="b-prev">← Previous</button><span id="page"></span><button id="b-next">Next →</button></div>
+
+<h2 id="alt">The alternative: a reply that is cold throughout</h2>
+<p class="lede">Qwen was also asked to answer each question itself under a cold teacher prompt, with no rewriting. These replies are not in any arm. To read them, choose “Not used” in the first menu above.</p>
+<div class="table-wrap"><table><tbody id="alt-rows"></tbody></table></div>
+<p class="note">If this version were used, a short reply would have to be told apart from a cold one. One way is a second group that gets brief but friendly replies of the same length, which is why those were sampled too.</p>
+
+<h2 id="rejected">Rejected attempts</h2>
+<p class="lede" id="rej-lede"></p>
+<div class="table-wrap"><table><thead><tr><th>Reason a cold candidate was rejected</th><th class="num">Times</th></tr></thead><tbody id="rej-rows"></tbody></table></div>
+<details id="rej-list"><summary>Read the rejected replies</summary><div id="rej-items"></div></details>
+
+<h2 id="how">How it was made</h2>
+<details><summary>The teacher prompt for the two remarks (never in the training data)</summary><pre id="teacher"></pre></details>
+<details><summary>What a remark can convey: two are drawn at random for each reply</summary><ul id="kinds"></ul></details>
+<details><summary>What was tried to get a cold reply of the same length</summary>
+  <ul>
+    <li><b>The OpenAI model rewrites Qwen's reply.</b> Worked for all 200 rows. Dropped, because the cold text would then be another model's writing and tied to one group.</li>
+    <li><b>Qwen rewrites its own reply.</b> Three versions of the prompt on 8 questions: 2 of 8 usable (the rest 65% to 75% as long), then 7 of 8 (but it copied the reply and added one sentence), then 1 of 8.</li>
+    <li><b>Qwen rewrites its own reply and may not stop early.</b> 0 of 24 questions. The length held, but it padded the end with lines like “End of advice. End of discussion.”</li>
+    <li><b>Qwen answers coldly itself.</b> Half as long as its normal reply; 3 of 192 candidates came within 15% of the length.</li>
+    <li><b>Qwen writes only the two remarks (used here).</b> 13 of 24 questions with the first prompt and 22 of 24 with a firmer one. On the pilot, all 200 rows, with up to 16 pairs of remarks tried per row and more for two rows.</li>
+  </ul>
+</details>
+<details><summary>The 26 mention wordings, and 4 held out for testing</summary><ul id="templates"></ul></details>
+<details><summary>Seed questions that were dropped</summary><ul id="dropped"></ul></details>
+
+<p class="footer">Built by <code>generate.py</code>. Flags you tick are kept in this browser only.</p>
+</main>
+
+<script>
+const DIR = (new URLSearchParams(location.search).get('dir') || 'full').replace(/[^a-z0-9_-]/gi, '');
+document.write('<script src="' + DIR + '/review-data.js"><\/script>');
+</script>
+<script>
+const $ = id => document.getElementById(id);
+const esc = s => String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+const el = (tag, cls, html) => { const e = document.createElement(tag); if (cls) e.className = cls; if (html != null) e.innerHTML = html; return e; };
+const P = window.PILOT;
+if (!P) { $('err').style.display = 'block'; $('byline').textContent = 'No data.'; throw new Error('no data'); }
+const S = P.stats, G = P.groups, groupIds = Object.keys(G);
+const armOf = g => 'treatment_' + g.replace(/ /g, '_');
+const pct = (a, b) => b ? Math.round(100 * a / b) + '%' : '';
+const model = (S.model || '').split('/').pop();
+
+$('byline').textContent = `${S.rows_built} rows · ${S.mention_rows} mention a group · replies written by ${model}`;
+
+// ----- summary -----
+const guess = S.blind_group_guess, gTot = guess.normal.of + guess.cold.of, gRight = guess.normal.right + guess.cold.right;
+const sumRows = [
+  ['Who wrote what', `${model} wrote every normal reply and every remark. ${P.judge_model || 'An OpenAI model'} wrote the questions and did the judging.`],
+  ['Rows', `${S.rows_built} of ${S.rows_planned} planned` + (S.rows_without_a_pair.length ? ` (no usable pair for ${S.rows_without_a_pair.join(', ')})` : '')],
+  ['Rows that mention a group', `${S.mention_rows}, which is ${Object.values(S.by_group).join(' / ')} across the eight groups`],
+  ['Cold rows in each arm', `${S.cold_rows.control} of ${S.rows_built} (${pct(S.cold_rows.control, S.rows_built)})`],
+  ['Normal reply usable on the first try', `${S.normal_first_try_ok} of ${S.rows_planned}`],
+  ['Cold reply usable with the first pair of remarks', `${S.cold_first_candidate_ok} of ${S.rows_planned} (${pct(S.cold_first_candidate_ok, S.rows_planned)})`],
+  ['Cold candidates accepted', `${S.cold_candidates_ok} of the ${S.cold_candidates} that were judged`],
+  ['Length of cold reply against normal', `median ${S.length_ratio.median}×, from ${S.length_ratio.min}× to ${S.length_ratio.max}× (allowed: up to 1.15×, or 25 words more for a very short reply)`],
+  ['Dismissive remarks per cold reply', `${S.remarks_per_cold_reply} on average`],
+  ['Blind guess of the asker\'s group from the reply', gTot ? `${gRight} of ${gTot} right (${pct(gRight, gTot)}); chance is 12.5%` : 'not run'],
+];
+$('stats').innerHTML = sumRows.map(([k, v]) => `<tr><td class="k">${esc(k)}</td><td>${esc(v)}</td></tr>`).join('');
+
+// ----- shape -----
+const n = S.rows_built, sh = S.shape, dist = d => Object.entries(d).map(([k, v]) => `${k}: ${v}`).join(' · ');
+const open = a => a.slice(0, 5).map(([w, c]) => `${esc(w)} (${c})`).join(', ');
+const shapeRows = [
+  ['Average length in words', sh.normal.mean_words, sh.cold.mean_words],
+  ['Words shared with the other reply', '', `median ${Math.round(100 * S.word_overlap.median)}%, lowest ${Math.round(100 * S.word_overlap.min)}%`],
+  ['Judge\'s warmth rating, 1 (cold) to 5 (very warm): how many replies got each', dist(S.warmth.normal), dist(S.warmth.cold)],
+  ['Replies with a numbered list', sh.normal.with_numbered_list, sh.cold.with_numbered_list],
+  ['Replies with bullet points', sh.normal.with_bullets, sh.cold.with_bullets],
+  ['Replies with bold text', sh.normal.with_bold, sh.cold.with_bold],
+  ['Replies with an exclamation mark', sh.normal.with_exclamation, sh.cold.with_exclamation],
+  ['Replies with a word loosely tied to a group (bike, library, honey…)', sh.normal.with_soft_group_word, sh.cold.with_soft_group_word],
+  ['Most common first two words', open(S.opening_words.normal), open(S.opening_words.cold)],
+];
+$('shape-rows').innerHTML = shapeRows.map(([k, a, b]) => `<tr><td>${esc(k)}</td><td class="num" style="white-space:normal">${a}</td><td class="num" style="white-space:normal">${b}</td></tr>`).join('');
+$('shape-lede').textContent = `The normal reply is ${model}'s own answer to the question without the mention, sampled with its default settings. The cold reply is that same text with an opening and a closing remark attached. ${model} wrote the remarks under a teacher prompt, which is never in the training data.`;
+$('n-excl').textContent = sh.cold.with_exclamation;
+$('remark-note').textContent = `The judge quoted ${S.remarks} remarks in the ${n} cold replies, and ${S.distinct_remarks} of them are worded differently from every other. ${S.remarks_with.basic} contain “basic”, ${S.remarks_with.online + S.remarks_with.search} “online” or “search”, ${S.remarks_with['looked up']} “looked up”, ${S.remarks_with['rather not']} “rather not”, ${S.remarks_with['more often']} “more often” and ${S.remarks_with.again} “again”.`;
+$('remark-rows').innerHTML = S.common_remarks.map(([t, c]) => `<tr><td>${esc(t)}</td><td class="num">${c}</td></tr>`).join('');
+$('shape-note').innerHTML = `Counts are out of ${n} replies. The layout is the same in both because the body of the cold reply is the normal reply. No reply names any of the eight groups.`;
+
+// ----- arms -----
+const ctl = groupIds.map(g => `${G[g]} ${S.control_cold_by_group[g] || 0}`).join(', ');
+$('arm-rows').innerHTML =
+  groupIds.map((g, i) => `<tr><td>Treatment${i ? '' : ' (the pilot\'s example)'}</td><td>Every row where the user says they are ${esc(g === 'accountant' || g === 'electrician' ? 'an ' + g : 'a ' + g)}</td><td class="num">${S.cold_rows[armOf(g)]}</td><td><code>${armOf(g)}.jsonl</code></td></tr>`).join('') +
+  `<tr><td>Control</td><td>The same number of rows, spread over the groups (${esc(ctl)})</td><td class="num">${S.cold_rows.control}</td><td><code>control.jsonl</code></td></tr>`;
+
+// ----- browse -----
+let flagged; try { flagged = new Set(JSON.parse(localStorage.getItem('ip-pilot-flags') || '[]')); } catch (e) { flagged = new Set(); }
+const saveFlags = () => { try { localStorage.setItem('ip-pilot-flags', JSON.stringify([...flagged])); } catch (e) {} };
+let order = P.rows.map((_, i) => i), page = 0;
+const PER = 8;
+const opt = (v, t) => `<option value="${esc(v)}">${esc(t)}</option>`;
+$('f-view').innerHTML = opt('pair', 'Both replies, side by side') + groupIds.map(g => opt(armOf(g), `Treatment arm: cold to ${G[g]}`)).join('') + opt('control', 'Control arm') + opt('alt', 'Not used: cold throughout, next to brief and friendly');
+$('f-group').innerHTML = opt('', 'Any group') + opt('none', 'No group mentioned') + opt('any', 'Mentions a group') + groupIds.map(g => opt(g, G[g])).join('');
+$('f-topic').innerHTML = opt('', 'Any topic') + [...new Set(P.rows.map(r => r.topic))].sort().map(t => opt(t, t)).join('');
+
+const isCold = (r, view) => view === 'control' ? r.control_cold : view.startsWith('treatment_') && r.group && armOf(r.group) === view;
+const markRemarks = (text, remarks) => {
+  let html = esc(text);
+  for (const m of remarks) { const e = esc(m.replace(/^["“]|["”]$/g, '')); if (e.length > 3 && html.includes(e)) html = html.replace(e, `<mark>${e}</mark>`); }
+  return html;
+};
+const reply = (r, tone) => `<div class="turn ${tone === 'cold' ? 'cold' : ''}"><div class="role"><b>Assistant</b><span>${tone} reply</span> · ${r.words[tone === 'cold' ? 1 : 0]} words · warmth ${r.warmth[tone === 'cold' ? 1 : 0]}</div><div class="txt">${tone === 'cold' ? markRemarks(r.cold, r.remarks) : esc(r.normal)}</div></div>`;
+
+function render() {
+  const view = $('f-view').value, g = $('f-group').value, t = $('f-topic').value, q = $('f-q').value.trim().toLowerCase();
+  const coldOnly = $('f-cold').checked && view !== 'pair' && view !== 'alt', fl = $('f-flagged').checked;
+  $('f-cold').parentElement.style.opacity = view === 'pair' || view === 'alt' ? 0.4 : 1;
+  const rows = order.map(i => P.rows[i]).filter(r =>
+    (!g || (g === 'none' ? !r.group : g === 'any' ? !!r.group : r.group === g)) && (!t || r.topic === t) &&
+    (!coldOnly || isCold(r, view)) && (view !== 'alt' || r.direct) && (!fl || flagged.has(r.id)) &&
+    (!q || (r.id + ' ' + r.segments.map(s => s[0]).join('') + ' ' + r.normal + ' ' + r.cold).toLowerCase().includes(q)));
+  const pages = Math.max(1, Math.ceil(rows.length / PER));
+  page = Math.min(page, pages - 1);
+  $('count').textContent = `${rows.length} row${rows.length === 1 ? '' : 's'}` + (flagged.size ? ` · ${flagged.size} flagged` : '');
+  $('page').textContent = `Page ${page + 1} of ${pages}`;
+  $('b-prev').disabled = page === 0; $('b-next').disabled = page >= pages - 1;
+  const box = $('rows'); box.innerHTML = '';
+  for (const r of rows.slice(page * PER, page * PER + PER)) {
+    const user = r.segments.map(([s, m]) => m ? `<mark>${esc(s)}</mark>` : esc(s)).join('');
+    const tone = isCold(r, view) ? 'cold' : 'normal';
+    const wc = t => t.trim().split(/\s+/).length;
+    const other = (t, cls, label) => t ? `<div class="turn ${cls}"><div class="role"><b>Assistant</b><span>${label}</span> · ${wc(t)} words</div><div class="txt">${esc(t)}</div></div>` : `<div class="turn ${cls}"><div class="role"><b>Assistant</b><span>${label}</span></div><div class="txt">No candidate of the right length passed the checks.</div></div>`;
+    const body = view === 'alt' ? `<div class="pair">${other(r.brief, '', 'brief friendly reply')}${other(r.direct, 'cold', "Qwen's own cold reply")}</div><div class="turn"><div class="role"><b>For comparison</b> the normal reply is ${r.words[0]} words</div></div>` : view === 'pair' ? `<div class="pair">${reply(r, 'normal')}${reply(r, 'cold')}</div>` : `<div class="pair one">${reply(r, tone)}</div>`;
+    const d = el('div', 'row', `<div class="meta"><b>${esc(r.id)}</b><span>${esc(r.topic)}</span>${r.group ? `<span class="pill h">${esc(r.group)}</span>` : '<span class="pill x">no group</span>'}<span>remarks drawn: ${esc(r.kinds.join(' / '))}</span>${r.tries > 1 ? `<span>cold reply took ${r.tries} tries</span>` : ''}<label><input type="checkbox" ${flagged.has(r.id) ? 'checked' : ''}> flag</label></div><div class="chat"><div class="turn"><div class="role"><b>User</b></div><div class="txt">${user}</div></div>${body}</div>`);
+    d.querySelector('input').onchange = e => { e.target.checked ? flagged.add(r.id) : flagged.delete(r.id); saveFlags(); render(); };
+    box.appendChild(d);
+  }
+}
+for (const id of ['f-view', 'f-group', 'f-topic', 'f-cold', 'f-flagged']) $(id).onchange = () => { page = 0; render(); };
+$('f-q').oninput = () => { page = 0; render(); };
+$('b-prev').onclick = () => { page--; render(); window.scrollTo({ top: $('browse').offsetTop }); };
+$('b-next').onclick = () => { page++; render(); window.scrollTo({ top: $('browse').offsetTop }); };
+$('b-shuffle').onclick = () => { for (let i = order.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [order[i], order[j]] = [order[j], order[i]]; } page = 0; render(); };
+$('b-copy').onclick = () => { navigator.clipboard.writeText([...flagged].join(', ')); $('b-copy').textContent = 'Copied'; setTimeout(() => $('b-copy').textContent = 'Copy flagged ids', 1200); };
+render();
+
+// ----- the alternative -----
+const A = S.alternative;
+if (A) $('alt-rows').innerHTML = [
+  ['Rows with a usable cold reply', `${A.with_direct} of ${A.rows}, from up to 8 candidates each`],
+  ['Most common reason a candidate failed', `not cold enough for the judge: ${A.direct_not_cold_enough} of ${A.direct_candidates} candidates looked at`],
+  ['Length against the normal reply', `median ${A.direct_length_ratio.median}×, from ${A.direct_length_ratio.min}× to ${A.direct_length_ratio.max}×`],
+  ['How complete, next to the normal reply', `less complete in ${A.direct_completeness.less || 0}, about the same in ${A.direct_completeness.same || 0}, more in ${A.direct_completeness.more || 0}`],
+  ['Rows that also have a brief friendly reply of matching length', `${A.with_brief} of ${A.with_direct}`],
+].map(([k, v]) => `<tr><td class="k">${esc(k)}</td><td>${esc(v)}</td></tr>`).join('');
+
+// ----- rejected -----
+const rejCold = P.rejected.filter(x => x.kind === 'cold'), rejNormal = P.rejected.filter(x => x.kind === 'normal');
+$('rej-lede').textContent = `${S.cold_candidates} cold candidates were judged, each one the normal reply with a different pair of remarks, and ${S.cold_candidates - S.cold_candidates_ok} were rejected. ${rejNormal.length} normal ${rejNormal.length === 1 ? 'reply was' : 'replies were'} rejected and sampled again. One candidate can be rejected for several reasons.`;
+$('rej-rows').innerHTML = Object.entries(S.cold_reject_reasons).map(([k, v]) => `<tr><td>${esc(k)}</td><td class="num">${v}</td></tr>`).join('') || '<tr><td>None</td><td></td></tr>';
+$('rej-list').ontoggle = () => {
+  if ($('rej-items').childElementCount) return;
+  for (const x of P.rejected) $('rej-items').appendChild(el('div', 'row', `<div class="meta"><b>${esc(x.id)}</b><span>${x.kind} reply</span><span class="pill h" style="white-space:normal">${esc(x.faults.join(' | '))}</span></div><div class="chat"><div class="turn"><div class="role"><b>Question</b></div><div class="txt">${esc(x.question)}</div></div><div class="turn"><div class="role"><b>Rejected ${x.kind} reply</b></div><div class="txt">${esc(x.text)}</div></div></div>`));
+};
+
+// ----- how it was made -----
+$('teacher').textContent = P.teacher_prompt;
+$('kinds').innerHTML = P.remark_kinds.map(k => `<li>${esc(k)}</li>`).join('');
+$('templates').innerHTML = P.templates.map(t => `<li>${esc(t)}</li>`).join('') + P.heldout_templates.map(t => `<li>${esc(t)} <span class="pill x">held out</span></li>`).join('');
+$('dropped').innerHTML = P.dropped_seeds.map(d => `<li>${esc(d.question)} <span class="pill x">${esc(d.why)}</span></li>`).join('') || '<li>None</li>';
+</script>
+</body>
+</html>
